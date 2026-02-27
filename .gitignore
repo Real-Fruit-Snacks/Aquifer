@@ -1,0 +1,19 @@
+# Build artifacts
+build/
+test-implant
+
+# Go
+coverage.out
+
+# Python
+__pycache__/
+*.pyc
+
+# Planning/internal docs (not for GitHub)
+docs/ADVANCED_TECHNIQUES.md
+docs/OPSEC_ISSUES.md
+docs/STEALTH_MODULES.md
+docs/TODO-*.md
+
+# Tool state
+.omc/

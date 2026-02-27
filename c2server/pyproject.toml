@@ -1,0 +1,32 @@
+[build-system]
+requires = ["setuptools>=68.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "aquifer-c2server"
+version = "0.1.0"
+description = "Aquifer C2 operator console"
+requires-python = ">=3.10"
+license = {text = "BSD-3-Clause"}
+dependencies = [
+    "cmd2>=2.4,<3.0",
+    "rich>=13.0,<14.0",
+    "cryptography>=41.0,<44.0",
+    "starlette>=0.35,<1.0",
+    "uvicorn>=0.25,<1.0",
+    "dnslib>=0.9,<1.0",
+    "httptools>=0.6,<1.0",
+]
+
+[project.scripts]
+aquifer-c2 = "c2server.__main__:main"
+
+[tool.ruff]
+target-version = "py310"
+line-length = 120
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "N", "UP", "B", "SIM"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

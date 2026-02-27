@@ -1,0 +1,1222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Aquifer — Kernel Namespace Isolation Framework</title>
+  <meta name="description" content="Linux post-exploitation framework using kernel namespace isolation. Multi-channel C2 with polymorphic beacons. 36 stealth modules for deep host-level blending.">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ctext y='26' font-size='26'%3E%F0%9F%92%A7%3C/text%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+  <style>
+    /* =========================================================
+       AQUIFER LANDING PAGE
+       Catppuccin Mocha palette — dark terminal aesthetic
+       ========================================================= */
+
+    *, *::before, *::after {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --ctp-rosewater: #f5e0dc;
+      --ctp-flamingo: #f2cdcd;
+      --ctp-pink: #f5c2e7;
+      --ctp-mauve: #cba6f7;
+      --ctp-red: #f38ba8;
+      --ctp-maroon: #eba0ac;
+      --ctp-peach: #fab387;
+      --ctp-yellow: #f9e2af;
+      --ctp-green: #a6e3a1;
+      --ctp-teal: #94e2d5;
+      --ctp-sky: #89dceb;
+      --ctp-sapphire: #74c7ec;
+      --ctp-blue: #89b4fa;
+      --ctp-lavender: #b4befe;
+      --ctp-text: #cdd6f4;
+      --ctp-subtext1: #bac2de;
+      --ctp-subtext0: #a6adc8;
+      --ctp-overlay2: #9399b2;
+      --ctp-overlay1: #7f849c;
+      --ctp-overlay0: #6c7086;
+      --ctp-surface2: #585b70;
+      --ctp-surface1: #45475a;
+      --ctp-surface0: #313244;
+      --ctp-base: #1e1e2e;
+      --ctp-mantle: #181825;
+      --ctp-crust: #11111b;
+    }
+
+    html {
+      scroll-behavior: smooth;
+      scrollbar-width: thin;
+      scrollbar-color: var(--ctp-surface1) var(--ctp-crust);
+    }
+
+    body {
+      font-family: 'JetBrains Mono', monospace;
+      background-color: var(--ctp-crust);
+      color: var(--ctp-text);
+      line-height: 1.7;
+      font-size: 15px;
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    /* ---- Dot-grid background pattern ---- */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: radial-gradient(var(--ctp-surface0) 1px, transparent 1px);
+      background-size: 24px 24px;
+      opacity: 0.3;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ---- CRT scanline overlay ---- */
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 2px,
+        rgba(0, 0, 0, 0.03) 2px,
+        rgba(0, 0, 0, 0.03) 4px
+      );
+      pointer-events: none;
+      z-index: 9999;
+    }
+
+    /* ---- Layout ---- */
+    .page-wrap {
+      position: relative;
+      z-index: 1;
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    section {
+      margin-bottom: 96px;
+    }
+
+    a {
+      color: var(--ctp-blue);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    a:hover {
+      color: var(--ctp-sapphire);
+    }
+
+    /* ---- Section titles ---- */
+    .section-label {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--ctp-overlay0);
+      border: 1px solid var(--ctp-surface1);
+      padding: 4px 12px;
+      border-radius: 2px;
+      margin-bottom: 20px;
+    }
+
+    .section-title {
+      font-size: clamp(22px, 3vw, 30px);
+      font-weight: 700;
+      color: var(--ctp-text);
+      margin-bottom: 12px;
+      line-height: 1.3;
+    }
+
+    .section-desc {
+      color: var(--ctp-subtext0);
+      font-size: 14px;
+      max-width: 600px;
+      margin-bottom: 40px;
+    }
+
+    /* =========================================================
+       HERO
+       ========================================================= */
+    .hero {
+      padding: 80px 0 48px;
+      text-align: center;
+      margin-bottom: 64px;
+    }
+
+    .hero-terminal {
+      border: 1px solid var(--ctp-surface1);
+      border-radius: 8px;
+      background: var(--ctp-mantle);
+      max-width: 780px;
+      margin: 0 auto;
+      overflow: hidden;
+      box-shadow:
+        0 0 0 1px var(--ctp-surface0),
+        0 24px 80px -12px rgba(0, 0, 0, 0.6),
+        0 0 120px -40px rgba(243, 139, 168, 0.08);
+    }
+
+    .hero-titlebar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 16px;
+      background: var(--ctp-crust);
+      border-bottom: 1px solid var(--ctp-surface0);
+    }
+
+    .hero-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+    }
+
+    .hero-dot--red { background: var(--ctp-red); }
+    .hero-dot--yellow { background: var(--ctp-yellow); }
+    .hero-dot--green { background: var(--ctp-green); }
+
+    .hero-titlebar-text {
+      flex: 1;
+      text-align: center;
+      font-size: 12px;
+      color: var(--ctp-overlay0);
+      letter-spacing: 0.05em;
+    }
+
+    .hero-body {
+      padding: 48px 40px 56px;
+    }
+
+    .hero-prompt {
+      font-size: 13px;
+      color: var(--ctp-overlay0);
+      margin-bottom: 24px;
+      letter-spacing: 0.02em;
+    }
+
+    .hero-prompt .prompt-symbol {
+      color: #a6e3a1;
+    }
+
+    .hero-prompt .prompt-path {
+      color: var(--ctp-mauve);
+    }
+
+    .hero-title {
+      font-size: clamp(42px, 7vw, 72px);
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      line-height: 1.05;
+      margin-bottom: 8px;
+      background: linear-gradient(
+        135deg,
+        var(--ctp-red) 0%,
+        var(--ctp-mauve) 30%,
+        var(--ctp-blue) 60%,
+        var(--ctp-teal) 100%
+      );
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      filter: drop-shadow(0 0 40px rgba(243, 139, 168, 0.2));
+    }
+
+    .hero-cursor {
+      display: inline-block;
+      width: 3px;
+      height: 0.8em;
+      background: var(--ctp-red);
+      margin-left: 4px;
+      vertical-align: baseline;
+      animation: blink 1s step-end infinite;
+    }
+
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0; }
+    }
+
+    .hero-tagline {
+      font-size: clamp(14px, 2vw, 17px);
+      color: var(--ctp-subtext0);
+      margin-bottom: 36px;
+      font-weight: 400;
+      line-height: 1.6;
+    }
+
+    .hero-tagline em {
+      color: var(--ctp-subtext1);
+      font-style: normal;
+    }
+
+    .hero-stats {
+      display: flex;
+      justify-content: center;
+      gap: 32px;
+      margin-bottom: 36px;
+      flex-wrap: wrap;
+    }
+
+    .hero-stat {
+      text-align: center;
+    }
+
+    .hero-stat-value {
+      font-size: 28px;
+      font-weight: 700;
+      line-height: 1.2;
+    }
+
+    .hero-stat:nth-child(1) .hero-stat-value { color: var(--ctp-red); }
+    .hero-stat:nth-child(2) .hero-stat-value { color: var(--ctp-blue); }
+    .hero-stat:nth-child(3) .hero-stat-value { color: var(--ctp-teal); }
+
+    .hero-stat-label {
+      font-size: 11px;
+      color: var(--ctp-overlay1);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+    }
+
+    .hero-buttons {
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 28px;
+      border-radius: 4px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 14px;
+      font-weight: 500;
+      letter-spacing: 0.02em;
+      border: 1px solid transparent;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-decoration: none;
+    }
+
+    .btn-primary {
+      background: var(--ctp-red);
+      color: var(--ctp-crust);
+      border-color: var(--ctp-red);
+    }
+
+    .btn-primary:hover {
+      background: var(--ctp-maroon);
+      border-color: var(--ctp-maroon);
+      color: var(--ctp-crust);
+      box-shadow: 0 0 24px rgba(243, 139, 168, 0.25);
+    }
+
+    .btn-ghost {
+      background: transparent;
+      color: var(--ctp-subtext1);
+      border-color: var(--ctp-surface1);
+    }
+
+    .btn-ghost:hover {
+      color: var(--ctp-text);
+      border-color: var(--ctp-overlay0);
+      background: var(--ctp-surface0);
+    }
+
+    /* =========================================================
+       FEATURES GRID
+       ========================================================= */
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+    }
+
+    .feature-card {
+      background: var(--ctp-mantle);
+      border: 1px solid var(--ctp-surface0);
+      border-radius: 6px;
+      padding: 28px 24px;
+      transition: all 0.25s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .feature-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--ctp-mauve), transparent);
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+
+    .feature-card:hover {
+      border-color: var(--ctp-surface1);
+      background: var(--ctp-base);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 32px -8px rgba(0, 0, 0, 0.4);
+    }
+
+    .feature-card:hover::before {
+      opacity: 1;
+    }
+
+    .feature-icon {
+      font-size: 24px;
+      margin-bottom: 16px;
+      display: block;
+      width: 44px;
+      height: 44px;
+      line-height: 44px;
+      text-align: center;
+      background: var(--ctp-surface0);
+      border-radius: 8px;
+      border: 1px solid var(--ctp-surface1);
+    }
+
+    .feature-card h3 {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--ctp-text);
+      margin-bottom: 8px;
+    }
+
+    .feature-card p {
+      font-size: 13px;
+      color: var(--ctp-subtext0);
+      line-height: 1.6;
+    }
+
+    .feature-card:nth-child(1):hover { border-color: var(--ctp-red); }
+    .feature-card:nth-child(1):hover::before { background: linear-gradient(90deg, transparent, var(--ctp-red), transparent); }
+
+    .feature-card:nth-child(2):hover { border-color: var(--ctp-mauve); }
+    .feature-card:nth-child(2):hover::before { background: linear-gradient(90deg, transparent, var(--ctp-mauve), transparent); }
+
+    .feature-card:nth-child(3):hover { border-color: var(--ctp-blue); }
+    .feature-card:nth-child(3):hover::before { background: linear-gradient(90deg, transparent, var(--ctp-blue), transparent); }
+
+    .feature-card:nth-child(4):hover { border-color: var(--ctp-green); }
+    .feature-card:nth-child(4):hover::before { background: linear-gradient(90deg, transparent, var(--ctp-green), transparent); }
+
+    .feature-card:nth-child(5):hover { border-color: var(--ctp-teal); }
+    .feature-card:nth-child(5):hover::before { background: linear-gradient(90deg, transparent, var(--ctp-teal), transparent); }
+
+    .feature-card:nth-child(6):hover { border-color: var(--ctp-peach); }
+    .feature-card:nth-child(6):hover::before { background: linear-gradient(90deg, transparent, var(--ctp-peach), transparent); }
+
+    .feature-card:nth-child(7):hover { border-color: var(--ctp-yellow); }
+    .feature-card:nth-child(7):hover::before { background: linear-gradient(90deg, transparent, var(--ctp-yellow), transparent); }
+
+    .feature-card:nth-child(8):hover { border-color: var(--ctp-flamingo); }
+    .feature-card:nth-child(8):hover::before { background: linear-gradient(90deg, transparent, var(--ctp-flamingo), transparent); }
+
+    /* =========================================================
+       CAPABILITIES
+       ========================================================= */
+    .capabilities-section {
+      text-align: center;
+    }
+
+    .capabilities-terminal {
+      border: 1px solid var(--ctp-surface1);
+      border-radius: 8px;
+      overflow: hidden;
+      background: var(--ctp-mantle);
+      box-shadow:
+        0 0 0 1px var(--ctp-surface0),
+        0 32px 80px -16px rgba(0, 0, 0, 0.5),
+        0 0 160px -60px rgba(243, 139, 168, 0.06);
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+
+    .capabilities-titlebar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 16px;
+      background: var(--ctp-crust);
+      border-bottom: 1px solid var(--ctp-surface0);
+    }
+
+    .capabilities-titlebar-text {
+      flex: 1;
+      text-align: center;
+      font-size: 12px;
+      color: var(--ctp-overlay0);
+    }
+
+    .capabilities-body {
+      padding: 32px;
+    }
+
+    .capabilities-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: 10px;
+      margin-bottom: 24px;
+    }
+
+    .capability-pill {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 14px;
+      border: 1px solid var(--ctp-surface0);
+      border-radius: 4px;
+      background: var(--ctp-base);
+      font-size: 13px;
+      color: var(--ctp-subtext1);
+      transition: all 0.2s;
+    }
+
+    .capability-pill:hover {
+      border-color: var(--ctp-surface2);
+      background: var(--ctp-surface0);
+    }
+
+    .capability-pill .detail {
+      font-size: 11px;
+      color: var(--ctp-overlay0);
+      margin-left: auto;
+    }
+
+    .capability-pill .dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .dot--transport { background: var(--ctp-red); }
+    .dot--crypto { background: var(--ctp-blue); }
+    .dot--opsec { background: var(--ctp-teal); }
+    .dot--safety { background: var(--ctp-mauve); }
+
+    .capabilities-legend {
+      display: flex;
+      justify-content: center;
+      gap: 24px;
+      flex-wrap: wrap;
+      font-size: 12px;
+      color: var(--ctp-overlay1);
+    }
+
+    .capabilities-legend span {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* =========================================================
+       ARCHITECTURE
+       ========================================================= */
+    .arch-terminal {
+      border: 1px solid var(--ctp-surface1);
+      border-radius: 8px;
+      overflow: hidden;
+      background: var(--ctp-mantle);
+      box-shadow: 0 16px 48px -12px rgba(0, 0, 0, 0.4);
+    }
+
+    .arch-titlebar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 16px;
+      background: var(--ctp-crust);
+      border-bottom: 1px solid var(--ctp-surface0);
+    }
+
+    .arch-titlebar-text {
+      flex: 1;
+      text-align: center;
+      font-size: 12px;
+      color: var(--ctp-overlay0);
+    }
+
+    .arch-body {
+      padding: 32px;
+    }
+
+    .arch-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 24px;
+    }
+
+    .arch-item {
+      padding: 20px;
+      border: 1px solid var(--ctp-surface0);
+      border-radius: 4px;
+      background: var(--ctp-base);
+    }
+
+    .arch-item-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .arch-item-marker {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--ctp-crust);
+      background: var(--ctp-red);
+      width: 24px;
+      height: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 3px;
+      flex-shrink: 0;
+    }
+
+    .arch-item:nth-child(2) .arch-item-marker { background: var(--ctp-blue); }
+    .arch-item:nth-child(3) .arch-item-marker { background: var(--ctp-teal); }
+    .arch-item:nth-child(4) .arch-item-marker { background: var(--ctp-mauve); }
+
+    .arch-item h3 {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--ctp-text);
+    }
+
+    .arch-item p {
+      font-size: 13px;
+      color: var(--ctp-subtext0);
+      line-height: 1.6;
+    }
+
+    .arch-item code {
+      font-size: 12px;
+      color: var(--ctp-red);
+      background: var(--ctp-surface0);
+      padding: 1px 6px;
+      border-radius: 3px;
+    }
+
+    .arch-divider {
+      border: none;
+      border-top: 1px dashed var(--ctp-surface1);
+      margin: 28px 0;
+    }
+
+    .arch-stack {
+      font-size: 13px;
+      color: var(--ctp-subtext0);
+      text-align: center;
+    }
+
+    .arch-stack span {
+      display: inline-block;
+      padding: 4px 14px;
+      border: 1px solid var(--ctp-surface1);
+      border-radius: 3px;
+      margin: 4px;
+      background: var(--ctp-base);
+      color: var(--ctp-subtext1);
+      font-size: 12px;
+    }
+
+    /* =========================================================
+       GETTING STARTED
+       ========================================================= */
+    .start-row {
+      display: flex;
+      gap: 40px;
+      align-items: flex-start;
+    }
+
+    .start-terminal {
+      border: 1px solid var(--ctp-surface1);
+      border-radius: 8px;
+      overflow: hidden;
+      background: var(--ctp-mantle);
+      box-shadow: 0 16px 48px -12px rgba(0, 0, 0, 0.4);
+      flex: 1;
+      min-width: 0;
+    }
+
+    .start-titlebar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 16px;
+      background: var(--ctp-crust);
+      border-bottom: 1px solid var(--ctp-surface0);
+    }
+
+    .start-titlebar-text {
+      flex: 1;
+      text-align: center;
+      font-size: 12px;
+      color: var(--ctp-overlay0);
+    }
+
+    .start-body {
+      padding: 28px 32px;
+    }
+
+    .start-line {
+      margin-bottom: 4px;
+      font-size: 14px;
+      line-height: 1.8;
+    }
+
+    .start-line .prompt {
+      color: #a6e3a1;
+      user-select: none;
+    }
+
+    .start-line .cmd {
+      color: var(--ctp-text);
+    }
+
+    .start-line .comment {
+      color: var(--ctp-overlay0);
+    }
+
+    .start-line .flag {
+      color: var(--ctp-red);
+    }
+
+    .start-line .arg {
+      color: var(--ctp-teal);
+    }
+
+    .start-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .start-info p {
+      font-size: 14px;
+      color: var(--ctp-subtext0);
+      margin-bottom: 12px;
+      line-height: 1.7;
+    }
+
+    .start-info code {
+      font-size: 13px;
+      color: var(--ctp-red);
+      background: var(--ctp-surface0);
+      padding: 2px 8px;
+      border-radius: 3px;
+      border: 1px solid var(--ctp-surface1);
+    }
+
+    /* =========================================================
+       USAGE EXAMPLES
+       ========================================================= */
+    .usage-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+    }
+
+    .usage-card {
+      border: 1px solid var(--ctp-surface0);
+      border-radius: 6px;
+      background: var(--ctp-mantle);
+      overflow: hidden;
+    }
+
+    .usage-card-header {
+      padding: 12px 16px;
+      background: var(--ctp-crust);
+      border-bottom: 1px solid var(--ctp-surface0);
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--ctp-subtext1);
+      letter-spacing: 0.05em;
+    }
+
+    .usage-card-body {
+      padding: 16px 20px;
+    }
+
+    .usage-card-body .start-line {
+      font-size: 13px;
+      line-height: 1.7;
+      margin-bottom: 2px;
+    }
+
+    /* =========================================================
+       FOOTER
+       ========================================================= */
+    .site-footer {
+      border-top: 1px solid var(--ctp-surface0);
+      padding: 48px 0;
+      text-align: center;
+      margin-top: 32px;
+    }
+
+    .footer-tagline {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--ctp-subtext1);
+      margin-bottom: 24px;
+      letter-spacing: 0.02em;
+    }
+
+    .footer-links {
+      display: flex;
+      justify-content: center;
+      gap: 32px;
+      margin-bottom: 28px;
+      flex-wrap: wrap;
+    }
+
+    .footer-links a {
+      font-size: 13px;
+      color: var(--ctp-overlay1);
+      transition: color 0.2s;
+    }
+
+    .footer-links a:hover {
+      color: var(--ctp-blue);
+    }
+
+    .footer-copy {
+      font-size: 12px;
+      color: var(--ctp-overlay0);
+    }
+
+    /* =========================================================
+       RESPONSIVE
+       ========================================================= */
+    @media (max-width: 900px) {
+      .features-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      .arch-grid {
+        grid-template-columns: 1fr;
+      }
+      .usage-grid {
+        grid-template-columns: 1fr;
+      }
+      .hero-body {
+        padding: 36px 24px 44px;
+      }
+      .start-row {
+        flex-direction: column;
+        gap: 24px;
+      }
+      .hero-stats {
+        gap: 24px;
+      }
+    }
+
+    @media (max-width: 600px) {
+      body {
+        font-size: 14px;
+      }
+      .page-wrap {
+        padding: 0 16px;
+      }
+      .features-grid {
+        grid-template-columns: 1fr;
+      }
+      .capabilities-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      section {
+        margin-bottom: 64px;
+      }
+      .hero {
+        padding: 48px 0 32px;
+      }
+      .hero-body {
+        padding: 28px 20px 36px;
+      }
+      .hero-buttons {
+        flex-direction: column;
+        align-items: center;
+      }
+      .btn {
+        width: 100%;
+        max-width: 260px;
+        justify-content: center;
+      }
+      .arch-body {
+        padding: 20px;
+      }
+      .start-body {
+        padding: 20px;
+      }
+      .start-line {
+        font-size: 12px;
+      }
+      .feature-card {
+        padding: 22px 20px;
+      }
+    }
+
+    /* ---- Selection highlight ---- */
+    ::selection {
+      background: rgba(243, 139, 168, 0.25);
+      color: var(--ctp-text);
+    }
+
+    /* ---- Focus styles for accessibility ---- */
+    a:focus-visible,
+    .btn:focus-visible {
+      outline: 2px solid var(--ctp-red);
+      outline-offset: 2px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="page-wrap">
+
+  <!-- ============ HERO ============ -->
+  <section class="hero" id="top">
+    <div class="hero-terminal">
+      <div class="hero-titlebar">
+        <span class="hero-dot hero-dot--red"></span>
+        <span class="hero-dot hero-dot--yellow"></span>
+        <span class="hero-dot hero-dot--green"></span>
+        <span class="hero-titlebar-text">aquifer -- namespace implant framework</span>
+      </div>
+      <div class="hero-body">
+        <h1 class="hero-title">Aquifer<span class="hero-cursor" aria-hidden="true"></span></h1>
+        <p class="hero-tagline">
+          Kernel <em>namespace isolation</em> for Linux<br>
+          post-exploitation and adversary simulation
+        </p>
+        <div class="hero-stats">
+          <div class="hero-stat">
+            <div class="hero-stat-value">36</div>
+            <div class="hero-stat-label">Stealth Modules</div>
+          </div>
+          <div class="hero-stat">
+            <div class="hero-stat-value">5</div>
+            <div class="hero-stat-label">Namespaces</div>
+          </div>
+          <div class="hero-stat">
+            <div class="hero-stat-value">4</div>
+            <div class="hero-stat-label">C2 Channels</div>
+          </div>
+        </div>
+        <div class="hero-buttons">
+          <a href="#getting-started" class="btn btn-primary">Get Started</a>
+          <a href="https://github.com/Real-Fruit-Snacks/Aquifer" class="btn btn-ghost">View on GitHub</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ FEATURES ============ -->
+  <section id="features">
+    <span class="section-label">// capabilities</span>
+    <h2 class="section-title">Isolate. Implant. Persist.</h2>
+    <p class="section-desc">
+      Kernel namespace isolation turns the OS against its own defenses. Multi-channel C2 with polymorphic beacons keeps traffic invisible. 36 stealth modules handle the rest.
+    </p>
+
+    <div class="features-grid">
+      <div class="feature-card">
+        <span class="feature-icon" aria-hidden="true">&#9881;</span>
+        <h3>Namespace Isolation</h3>
+        <p>PID, Mount, Network, UTS, and Cgroup namespace isolation with veth pair routing and NAT masquerade. Kernel-enforced sandbox with DNAT loopback routing.</p>
+      </div>
+
+      <div class="feature-card">
+        <span class="feature-icon" aria-hidden="true">&#8644;</span>
+        <h3>Multi-Channel C2</h3>
+        <p>HTTPS primary with domain fronting. DNS tunneling fallback via TXT records. DNS-over-HTTPS for restrictive networks. Raw Layer 2 Ethernet below netfilter.</p>
+      </div>
+
+      <div class="feature-card">
+        <span class="feature-icon" aria-hidden="true">&#9830;</span>
+        <h3>Polymorphic Beacons</h3>
+        <p>18 rotating paths, 8 content-types, 13 user-agents, randomized headers per cycle. JA3 fingerprint randomization per session with cryptographic jitter.</p>
+      </div>
+
+      <div class="feature-card">
+        <span class="feature-icon" aria-hidden="true">&#128274;</span>
+        <h3>Memory Protection</h3>
+        <p><code style="font-size:12px;color:var(--ctp-red);background:var(--ctp-surface0);padding:1px 5px;border-radius:3px;">ProtectedConfig</code> encrypts C2 URLs and keys at rest with XOR rekeying. <code style="font-size:12px;color:var(--ctp-red);background:var(--ctp-surface0);padding:1px 5px;border-radius:3px;">[]byte</code> API with deterministic shredding.</p>
+      </div>
+
+      <div class="feature-card">
+        <span class="feature-icon" aria-hidden="true">&#9002;</span>
+        <h3>Process Masquerade</h3>
+        <p>Kernel-level argv and <code style="font-size:12px;color:var(--ctp-red);background:var(--ctp-surface0);padding:1px 5px;border-radius:3px;">/proc/[pid]/comm</code> rewrite. Direct <code style="font-size:12px;color:var(--ctp-red);background:var(--ctp-surface0);padding:1px 5px;border-radius:3px;">/proc/self/mem</code> environ zeroing. GOMAXPROCS(1) thread reduction.</p>
+      </div>
+
+      <div class="feature-card">
+        <span class="feature-icon" aria-hidden="true">&#128065;</span>
+        <h3>36 Stealth Modules</h3>
+        <p>eBPF cloaking hides PIDs in BPF maps. memfd_create + execveat for fileless exec. Kernel keyring secrets. Anti-dump regions. io_uring shared ring buffers.</p>
+      </div>
+
+      <div class="feature-card">
+        <span class="feature-icon" aria-hidden="true">&#127919;</span>
+        <h3>Target Keying</h3>
+        <p>Hostname, CIDR range, MAC address, machine ID, canary file, and kill date guardrails prevent lab escape. Auto-terminates and cleans up on guardrail failure.</p>
+      </div>
+
+      <div class="feature-card">
+        <span class="feature-icon" aria-hidden="true">&#128268;</span>
+        <h3>Advanced Persistence</h3>
+        <p>Systemd generators run before all units at boot. NSS modules trigger on DNS/user lookups. Logrotate, DHCP, APT, audit dispatcher, NM dispatcher, sysctl.d, and modprobe hooks fire on routine events.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ CAPABILITIES ============ -->
+  <section class="capabilities-section" id="capabilities">
+    <span class="section-label">// transport &amp; crypto</span>
+    <h2 class="section-title">Four channels. Zero traces.</h2>
+    <p class="section-desc" style="margin-left:auto;margin-right:auto;">
+      Cascading transport failover with polymorphic profiles. Every beacon cycle uses fresh paths, headers, and fingerprints.
+    </p>
+
+    <div class="capabilities-terminal">
+      <div class="capabilities-titlebar">
+        <span class="hero-dot hero-dot--red"></span>
+        <span class="hero-dot hero-dot--yellow"></span>
+        <span class="hero-dot hero-dot--green"></span>
+        <span class="capabilities-titlebar-text">aquifer --status -- transport &amp; crypto matrix</span>
+      </div>
+      <div class="capabilities-body">
+        <div class="capabilities-grid">
+          <div class="capability-pill"><span class="dot dot--transport"></span> HTTPS Transport <span class="detail">primary</span></div>
+          <div class="capability-pill"><span class="dot dot--transport"></span> DNS Tunneling <span class="detail">fallback</span></div>
+          <div class="capability-pill"><span class="dot dot--transport"></span> DoH Transport <span class="detail">restricted</span></div>
+          <div class="capability-pill"><span class="dot dot--transport"></span> Raw L2 <span class="detail">stealth</span></div>
+          <div class="capability-pill"><span class="dot dot--crypto"></span> ECDH P-256 <span class="detail">crypto</span></div>
+          <div class="capability-pill"><span class="dot dot--crypto"></span> AES-256-GCM <span class="detail">crypto</span></div>
+          <div class="capability-pill"><span class="dot dot--crypto"></span> Session Encryption <span class="detail">crypto</span></div>
+          <div class="capability-pill"><span class="dot dot--opsec"></span> Process Hiding <span class="detail">opsec</span></div>
+          <div class="capability-pill"><span class="dot dot--opsec"></span> Environ Scrub <span class="detail">opsec</span></div>
+          <div class="capability-pill"><span class="dot dot--opsec"></span> Memory Encrypt <span class="detail">opsec</span></div>
+          <div class="capability-pill"><span class="dot dot--safety"></span> Kill Switch <span class="detail">safety</span></div>
+          <div class="capability-pill"><span class="dot dot--safety"></span> Guardrails <span class="detail">safety</span></div>
+        </div>
+        <div class="capabilities-legend">
+          <span><span class="dot dot--transport" style="display:inline-block;width:6px;height:6px;border-radius:50%;"></span> Transport</span>
+          <span><span class="dot dot--crypto" style="display:inline-block;width:6px;height:6px;border-radius:50%;"></span> Cryptography</span>
+          <span><span class="dot dot--opsec" style="display:inline-block;width:6px;height:6px;border-radius:50%;"></span> OPSEC</span>
+          <span><span class="dot dot--safety" style="display:inline-block;width:6px;height:6px;border-radius:50%;"></span> Safety</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ ARCHITECTURE ============ -->
+  <section id="architecture">
+    <span class="section-label">// architecture</span>
+    <h2 class="section-title">Two stages. Full isolation.</h2>
+    <p class="section-desc">
+      Parent runs pre-namespace evasion, re-execs into isolated namespaces, child operates the beacon loop with encrypted C2 and transport failover.
+    </p>
+
+    <div class="arch-terminal">
+      <div class="arch-titlebar">
+        <span class="hero-dot hero-dot--red"></span>
+        <span class="hero-dot hero-dot--yellow"></span>
+        <span class="hero-dot hero-dot--green"></span>
+        <span class="arch-titlebar-text">system architecture</span>
+      </div>
+      <div class="arch-body">
+        <div class="arch-grid">
+          <div class="arch-item">
+            <div class="arch-item-header">
+              <span class="arch-item-marker">01</span>
+              <h3>Two-Stage Execution</h3>
+            </div>
+            <p>
+              Parent runs guardrails, VM detection, EDR adaptation, and OPSEC hardening. Re-execs into isolated namespaces. Child operates the beacon loop in kernel-enforced isolation. Parent handles SIGTERM/SIGINT and cleans up host-side artifacts on exit.
+            </p>
+          </div>
+
+          <div class="arch-item">
+            <div class="arch-item-header">
+              <span class="arch-item-marker">02</span>
+              <h3>Protected Config</h3>
+            </div>
+            <p>
+              XOR-encrypted blobs for C2 URLs and session keys with rekeying each cycle. <code>GetC2ServersBytes()</code> returns <code>[]byte</code> slices that callers shred after use.
+            </p>
+          </div>
+
+          <div class="arch-item">
+            <div class="arch-item-header">
+              <span class="arch-item-marker">03</span>
+              <h3>Transport Failover</h3>
+            </div>
+            <p>
+              HTTPS primary with domain fronting, DNS fallback via TXT records, DoH for restrictive networks. Polymorphic profiles rotate paths, headers, and fingerprints per cycle.
+            </p>
+          </div>
+
+          <div class="arch-item">
+            <div class="arch-item-header">
+              <span class="arch-item-marker">04</span>
+              <h3>Namespace Sandbox</h3>
+            </div>
+            <p>
+              <code>CLONE_NEWPID|NEWNS|NEWNET|NEWUTS|NEWCGROUP</code> with veth pair, NAT masquerade, and DNAT loopback routing for host connectivity inside full kernel isolation.
+            </p>
+          </div>
+        </div>
+
+        <hr class="arch-divider">
+
+        <div class="arch-stack">
+          <span>Go 1.21+</span>
+          <span>AES-256-GCM</span>
+          <span>ECDH P-256</span>
+          <span>Linux Namespaces</span>
+          <span>eBPF</span>
+          <span>io_uring</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ USAGE ============ -->
+  <section id="usage">
+    <span class="section-label">// examples</span>
+    <h2 class="section-title">Build. Verify. Deploy.</h2>
+    <p class="section-desc">
+      Development builds, obfuscated releases, integration tests, and OPSEC verification. The Makefile handles everything.
+    </p>
+
+    <div class="usage-grid">
+      <div class="usage-card">
+        <div class="usage-card-header">Build (Dev)</div>
+        <div class="usage-card-body">
+          <div class="start-line"><span class="prompt">$</span> <span class="cmd">make</span> <span class="flag">build</span></div>
+        </div>
+      </div>
+      <div class="usage-card">
+        <div class="usage-card-header">Build (Release)</div>
+        <div class="usage-card-body">
+          <div class="start-line"><span class="prompt">$</span> <span class="cmd">make</span> <span class="flag">build-release</span></div>
+        </div>
+      </div>
+      <div class="usage-card">
+        <div class="usage-card-header">Integration Test</div>
+        <div class="usage-card-body">
+          <div class="start-line"><span class="prompt">$</span> <span class="cmd">./scripts/integration_test.sh</span></div>
+        </div>
+      </div>
+      <div class="usage-card">
+        <div class="usage-card-header">OPSEC Check</div>
+        <div class="usage-card-body">
+          <div class="start-line"><span class="prompt">$</span> <span class="cmd">make</span> <span class="flag">opsec-check</span></div>
+        </div>
+      </div>
+      <div class="usage-card">
+        <div class="usage-card-header">Cross-compile ARM64</div>
+        <div class="usage-card-body">
+          <div class="start-line"><span class="prompt">$</span> <span class="cmd">make</span> <span class="flag">build-arm64</span></div>
+        </div>
+      </div>
+      <div class="usage-card">
+        <div class="usage-card-header">Format &amp; Lint</div>
+        <div class="usage-card-body">
+          <div class="start-line"><span class="prompt">$</span> <span class="cmd">make</span> <span class="flag">check</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ GETTING STARTED ============ -->
+  <section id="getting-started">
+    <span class="section-label">// quickstart</span>
+    <h2 class="section-title">Operational in 60 seconds</h2>
+    <p class="section-desc">
+      Clone, build, deploy. The Makefile handles compilation, stripping, and static linking. The C2 server manages sessions.
+    </p>
+
+    <div class="start-row">
+      <div class="start-terminal">
+        <div class="start-titlebar">
+          <span class="hero-dot hero-dot--red"></span>
+          <span class="hero-dot hero-dot--yellow"></span>
+          <span class="hero-dot hero-dot--green"></span>
+          <span class="start-titlebar-text">bash</span>
+        </div>
+        <div class="start-body">
+          <div class="start-line">
+            <span class="comment"># Clone and build</span>
+          </div>
+          <div class="start-line">
+            <span class="prompt">$</span> <span class="cmd">git clone</span> <span class="arg">https://github.com/Real-Fruit-Snacks/Aquifer.git</span>
+          </div>
+          <div class="start-line">
+            <span class="prompt">$</span> <span class="cmd">cd</span> <span class="arg">Aquifer</span>
+          </div>
+          <div class="start-line" style="margin-bottom:16px;">
+            <span class="prompt">$</span> <span class="cmd">make</span> <span class="flag">build</span>
+          </div>
+          <div class="start-line">
+            <span class="comment"># Start C2 server</span>
+          </div>
+          <div class="start-line" style="margin-bottom:16px;">
+            <span class="prompt">$</span> <span class="cmd">python3</span> <span class="flag">-m</span> <span class="arg">c2server</span> <span class="flag">--db</span> <span class="arg">c2.db</span> <span class="flag">--keys</span> <span class="arg">server_keys.pem</span>
+          </div>
+          <div class="start-line">
+            <span class="comment"># Deploy implant to target</span>
+          </div>
+          <div class="start-line">
+            <span class="prompt">$</span> <span class="cmd">./build/implant</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="start-info">
+        <p>
+          <strong style="color:var(--ctp-text);">make build</strong> produces a stripped, statically-linked binary with all configuration baked in via <code>-ldflags</code>. No runtime config files needed.
+        </p>
+        <p>
+          The <strong style="color:var(--ctp-text);">test implant</strong> at <code>cmd/test-implant/</code> runs without namespace isolation or evasion checks, making it suitable for lab/VM environments. Built with <code>-tags testbuild</code>.
+        </p>
+        <p>
+          For production, use <code>make build-release</code> which adds garble obfuscation, UPX compression, and UPX signature scrubbing. Run <code>make opsec-check</code> to verify the binary is clean.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ FOOTER ============ -->
+  <footer class="site-footer">
+    <p class="footer-tagline">Built for offense. Tested in labs.</p>
+    <nav class="footer-links" aria-label="Footer links">
+      <a href="https://github.com/Real-Fruit-Snacks/Aquifer">GitHub</a>
+      <a href="https://github.com/Real-Fruit-Snacks/Aquifer/issues">Report Issue</a>
+    </nav>
+    <p class="footer-copy">Aquifer -- hidden infrastructure, deep below the surface.</p>
+  </footer>
+
+</div>
+
+</body>
+</html>
