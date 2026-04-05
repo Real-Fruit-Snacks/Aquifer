@@ -1,105 +1,23 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 220" fill="none">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 110" fill="none">
   <defs>
-    <!-- Primary gradient: red tones (3-stop, 40% mid) -->
-    <linearGradient id="g1" x1="0%" y1="0%" x2="100%" y2="100%">
+    <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
       <stop offset="0%" stop-color="#dc2626"/>
-      <stop offset="40%" stop-color="#dc2626"/>
-      <stop offset="100%" stop-color="#ef4444"/>
+      <stop offset="50%" stop-color="#e11d48"/>
+      <stop offset="100%" stop-color="#db2777"/>
     </linearGradient>
-
-    <!-- Accent gradient: crimson to red -->
-    <linearGradient id="g2" x1="0%" y1="100%" x2="100%" y2="0%">
-      <stop offset="0%" stop-color="#ef4444"/>
-      <stop offset="100%" stop-color="#dc2626"/>
-    </linearGradient>
-
-    <!-- Icon gradient: vertical -->
-    <linearGradient id="g3" x1="0%" y1="0%" x2="0%" y2="100%">
-      <stop offset="0%" stop-color="#dc2626"/>
-      <stop offset="50%" stop-color="#dc2626"/>
-      <stop offset="100%" stop-color="#ef4444"/>
-    </linearGradient>
-
-    <!-- Ring gradient for concentric rings -->
-    <linearGradient id="g4" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#dc2626"/>
-      <stop offset="100%" stop-color="#ef4444"/>
-    </linearGradient>
-
-    <!-- Softglow filter -->
-    <filter id="softglow" x="-30%" y="-30%" width="160%" height="160%">
-      <feGaussianBlur in="SourceAlpha" stdDeviation="6" result="blur"/>
-      <feFlood flood-color="#dc2626" flood-opacity="0.15" result="color"/>
-      <feComposite in="color" in2="blur" operator="in" result="shadow"/>
-      <feComposite in="SourceGraphic" in2="shadow" operator="over"/>
+    <radialGradient id="glow" cx="50%" cy="40%" r="40%">
+      <stop offset="0%" stop-color="#dc2626" stop-opacity="0.08"/>
+      <stop offset="50%" stop-color="#e11d48" stop-opacity="0.03"/>
+      <stop offset="100%" stop-color="#db2777" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="textglow">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="2" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
     </filter>
   </defs>
-
-  <!-- ===================== LOGOMARK: Namespace Isolation Rings ===================== -->
-  <g transform="translate(58, 40)" filter="url(#softglow)">
-
-    <!-- Hexagonal frame -->
-    <path d="M 80 6 L 140 38 L 140 102 L 80 134 L 20 102 L 20 38 Z"
-          fill="none" stroke="url(#g1)" stroke-width="1.5" opacity="0.4"/>
-
-    <!-- Inner hex fill -->
-    <path d="M 80 14 L 134 42 L 134 98 L 80 126 L 26 98 L 26 42 Z"
-          fill="#dc2626" opacity="0.04"/>
-
-    <!-- Ring 1 (innermost, solid) -->
-    <circle cx="80" cy="70" r="16" fill="none" stroke="url(#g4)" stroke-width="1.8" opacity="0.8"/>
-
-    <!-- Ring 2 (middle, solid) -->
-    <circle cx="80" cy="70" r="30" fill="none" stroke="url(#g4)" stroke-width="1.4" opacity="0.5"/>
-
-    <!-- Ring 3 (outer, dashed — breached boundary) -->
-    <circle cx="80" cy="70" r="44" fill="none" stroke="url(#g2)" stroke-width="1.2" opacity="0.3"
-            stroke-dasharray="6 4"/>
-
-    <!-- Beacon dots on Ring 1 -->
-    <circle cx="96" cy="70" r="2" fill="#dc2626" opacity="0.85"/>
-    <circle cx="72" cy="56" r="2" fill="#ef4444" opacity="0.75"/>
-    <circle cx="72" cy="84" r="1.8" fill="#ef4444" opacity="0.7"/>
-
-    <!-- Beacon dots on Ring 2 -->
-    <circle cx="110" cy="70" r="1.8" fill="#ef4444" opacity="0.65"/>
-    <circle cx="80" cy="40" r="1.8" fill="#dc2626" opacity="0.6"/>
-    <circle cx="56" cy="85" r="1.5" fill="#ef4444" opacity="0.55"/>
-    <circle cx="100" cy="52" r="1.5" fill="#ef4444" opacity="0.5"/>
-
-    <!-- Beacon dots on Ring 3 (breached) -->
-    <circle cx="80" cy="26" r="1.5" fill="#dc2626" opacity="0.4"/>
-    <circle cx="117" cy="48" r="1.3" fill="#ef4444" opacity="0.35"/>
-    <circle cx="43" cy="52" r="1.3" fill="#ef4444" opacity="0.35"/>
-    <circle cx="117" cy="92" r="1.2" fill="#ef4444" opacity="0.3"/>
-
-    <!-- Center node — implant core -->
-    <circle cx="80" cy="70" r="5" fill="#dc2626" opacity="0.9"/>
-    <circle cx="80" cy="70" r="2.5" fill="#ffffff"/>
-    <circle cx="80" cy="70" r="8" fill="none" stroke="#dc2626" stroke-width="0.5" opacity="0.25"/>
-
-    <!-- Corner accents -->
-    <circle cx="80" cy="6" r="2" fill="#dc2626" opacity="0.3"/>
-    <circle cx="80" cy="134" r="2" fill="#ef4444" opacity="0.3"/>
-  </g>
-
-  <!-- ===================== TYPOGRAPHY ===================== -->
-
-  <text x="415" y="108"
-        font-family="'SF Pro Display', 'Inter', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif"
-        font-size="66" font-weight="800" letter-spacing="18"
-        fill="url(#g1)" text-anchor="middle">AQUIFER</text>
-
-  <line x1="280" y1="128" x2="550" y2="128"
-        stroke="url(#g1)" stroke-width="0.8" opacity="0.25"/>
-
-  <text x="415" y="152"
-        font-family="'SF Mono', 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace"
-        font-size="11.5" font-weight="400" letter-spacing="5.5"
-        fill="#57534e" text-anchor="middle">POST-EXPLOITATION FRAMEWORK</text>
-
-  <text x="415" y="172"
-        font-family="'SF Mono', 'JetBrains Mono', 'Fira Code', monospace"
-        font-size="9" font-weight="400" letter-spacing="3"
-        fill="#a8a29e" text-anchor="middle">GO  ·  NAMESPACES  ·  C2  ·  STEALTH</text>
+  <ellipse cx="210" cy="45" rx="160" ry="40" fill="url(#glow)"/>
+  <text x="210" y="52" text-anchor="middle" font-family="'Inter', 'SF Pro Display', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="46" font-weight="800" fill="url(#grad)" letter-spacing="5" filter="url(#textglow)">AQUIFER</text>
+  <line x1="115" y1="68" x2="305" y2="68" stroke="url(#grad)" stroke-width="0.6" opacity="0.2"/>
+  <text x="210" y="84" text-anchor="middle" font-family="'JetBrains Mono', 'SF Mono', 'Fira Code', 'Cascadia Code', monospace" font-size="10" font-weight="400" fill="#57534e" letter-spacing="5">POST-EXPLOITATION FRAMEWORK</text>
+  <text x="210" y="100" text-anchor="middle" font-family="'JetBrains Mono', 'SF Mono', 'Fira Code', monospace" font-size="7.5" font-weight="400" fill="#a8a29e" letter-spacing="3">GO  ·  NAMESPACES  ·  C2  ·  STEALTH</text>
 </svg>
