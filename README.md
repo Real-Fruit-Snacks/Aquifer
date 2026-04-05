@@ -1,42 +1,24 @@
 <div align="center">
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="assets/banner.svg">
-  <source media="(prefers-color-scheme: light)" srcset="assets/banner.svg">
-  <img alt="Aquifer" src="assets/banner.svg" width="800">
+  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/Real-Fruit-Snacks/Aquifer/main/docs/assets/logo-dark.svg">
+  <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/Real-Fruit-Snacks/Aquifer/main/docs/assets/logo-light.svg">
+  <img alt="Aquifer" src="https://raw.githubusercontent.com/Real-Fruit-Snacks/Aquifer/main/docs/assets/logo-dark.svg" width="520">
 </picture>
 
-<br>
+![Go](https://img.shields.io/badge/language-Go-00ADD8.svg)
+![Platform](https://img.shields.io/badge/platform-Linux-lightgrey)
+![License](https://img.shields.io/badge/license-MIT-blue.svg)
 
 **Linux post-exploitation framework using kernel namespace isolation**
 
-[![Go](https://img.shields.io/badge/Go-1.21+-00ADD8?style=flat-square&logo=go&logoColor=white)](https://go.dev)
-[![Platform](https://img.shields.io/badge/Platform-Linux-FCC624?style=flat-square&logo=linux&logoColor=black)](https://kernel.org)
-[![License](https://img.shields.io/badge/License-Authorized%20Use%20Only-red?style=flat-square)](.)
+Kernel namespace isolation turns the OS against its own defenses. Multi-channel C2 with polymorphic beacons keeps traffic invisible. 36 stealth modules handle everything from eBPF cloaking to fileless execution.
 
-Kernel namespace isolation turns the OS against its own defenses. Multi-channel C2 with polymorphic beacons keeps traffic invisible. 36 stealth modules handle the rest.
+> **Authorization Required**: This tool is designed exclusively for authorized security testing with explicit written permission. Unauthorized access to computer systems is illegal and may result in criminal prosecution.
 
-> **For authorized security testing only.** Requires signed Rules of Engagement.
+[Quick Start](#quick-start) • [Stealth Modules](#stealth-modules) • [C2 Transport](#c2-transport) • [Architecture](#architecture) • [Configuration](#configuration) • [Security](#security)
 
 </div>
-
----
-
-## Table of Contents
-
-- [Highlights](#highlights)
-- [Quick Start](#quick-start)
-- [Execution Flow](#execution-flow)
-- [C2 Transport](#c2-transport)
-- [C2 Server](#c2-server)
-- [Stealth Modules](#stealth-modules)
-- [Evasion](#evasion)
-- [OPSEC](#opsec)
-- [Advanced Persistence](#advanced-persistence)
-- [Wire Protocol](#wire-protocol)
-- [Architecture](#architecture)
-- [Configuration](#configuration)
-- [Testing](#testing)
 
 ---
 
@@ -46,63 +28,31 @@ Kernel namespace isolation turns the OS against its own defenses. Multi-channel 
 <tr>
 <td width="50%">
 
-### Namespace Isolation
-
+**Namespace Isolation**
 PID, Mount, Network, UTS, and Cgroup namespace isolation with veth pair routing and NAT masquerade. The implant operates in its own kernel-enforced sandbox with DNAT loopback routing for host connectivity.
 
-</td>
-<td width="50%">
-
-### Multi-Channel C2
-
+**Multi-Channel C2**
 HTTPS primary with domain fronting. DNS tunneling fallback via TXT records. DNS-over-HTTPS for restrictive networks. Raw Layer 2 Ethernet frames below netfilter/iptables for environments where everything else fails.
 
-</td>
-</tr>
-<tr>
-<td width="50%">
-
-### Polymorphic Beacons
-
+**Polymorphic Beacons**
 18 rotating paths, 8 content-types, 13 user-agents, and randomized headers per cycle. JA3 fingerprint randomization per session. Traffic shaping mimics legitimate browsing patterns with cryptographic jitter.
 
-</td>
-<td width="50%">
-
-### Memory Protection
-
+**Memory Protection**
 `ProtectedConfig` encrypts C2 URLs and session keys at rest with XOR rekeying each cycle. `[]byte` API with deterministic shredding after use. `DisableKeepAlives` + `FlushConnections()` + `runtime.GC()` clears transient state.
 
 </td>
-</tr>
-<tr>
 <td width="50%">
 
-### Process Masquerade
-
+**Process Masquerade**
 Kernel-level argv and `/proc/[pid]/comm` rewrite impersonating `accounts-daemon`. Direct `/proc/self/mem` zeroing of the environ region defeats `cat /proc/PID/environ`. `GOMAXPROCS(1)` reduces visible OS threads.
 
-</td>
-<td width="50%">
-
-### 36 Stealth Modules
-
+**36 Stealth Modules**
 eBPF cloaking hides PIDs in BPF maps. `memfd_create` + `execveat` for fileless execution. Kernel keyring stores secrets invisible to userspace forensics. Anti-dump regions block LiME/AVML. `io_uring` shared ring buffers bypass syscall monitoring.
 
-</td>
-</tr>
-<tr>
-<td width="50%">
-
-### Target Keying
-
+**Target Keying**
 Hostname, CIDR range, MAC address, machine ID, canary file, and kill date guardrails prevent lab escape. The implant auto-terminates and cleans up if any guardrail fails. No accidental detonation outside the target environment.
 
-</td>
-<td width="50%">
-
-### Advanced Persistence
-
+**Advanced Persistence**
 Systemd generators run before all units at boot. NSS modules trigger on any DNS or user lookup. Logrotate, DHCP, APT, and audit dispatcher hooks fire on routine system events. `binfmt_misc` and modprobe hooks cover the rest.
 
 </td>
@@ -115,17 +65,46 @@ Systemd generators run before all units at boot. NSS modules trigger on any DNS 
 
 ### Prerequisites
 
-| Requirement | Version | Notes |
-|-------------|---------|-------|
-| Go | 1.21+ | 1.25+ for garble obfuscation |
-| Platform | Linux | Kernel namespace support required |
-| garble | latest | Optional, for obfuscated builds |
-| UPX | latest | Optional, for release compression |
-| Python | 3.9+ | For C2 server |
+<table>
+<tr>
+<th>Requirement</th>
+<th>Version</th>
+<th>Purpose</th>
+</tr>
+<tr>
+<td>Go</td>
+<td>1.21+</td>
+<td>Compiler toolchain (1.25+ for garble obfuscation)</td>
+</tr>
+<tr>
+<td>Platform</td>
+<td>Linux</td>
+<td>Kernel namespace support required</td>
+</tr>
+<tr>
+<td>garble</td>
+<td>latest</td>
+<td>Optional, for obfuscated builds</td>
+</tr>
+<tr>
+<td>UPX</td>
+<td>latest</td>
+<td>Optional, for release compression</td>
+</tr>
+<tr>
+<td>Python</td>
+<td>3.9+</td>
+<td>C2 operator console</td>
+</tr>
+</table>
 
 ### Build
 
 ```bash
+# Clone repository
+git clone https://github.com/Real-Fruit-Snacks/Aquifer.git
+cd Aquifer
+
 # Development build (stripped, static)
 make build
 
@@ -144,7 +123,7 @@ make check
 
 Output binaries are placed in `build/`.
 
-### Verify
+### Verification
 
 ```bash
 # Check for Go metadata leaks
@@ -201,14 +180,36 @@ Operational loop inside namespaces:
 
 ### Transport Features
 
-| Feature | Description |
-|---------|-------------|
-| JA3 randomization | Unique TLS fingerprint per session |
-| Traffic shaping | Mimics legitimate browsing patterns |
-| Polymorphic intervals | Cryptographic jitter on beacon timing |
-| Server-side overrides | Sleep and jitter tuning via `BeaconResponse` |
-| Automatic failover | Cascading transport channel fallback |
-| Deterministic routing | `X-Request-ID` header for O(1) session resolution |
+<table>
+<tr>
+<th>Feature</th>
+<th>Description</th>
+</tr>
+<tr>
+<td>JA3 randomization</td>
+<td>Unique TLS fingerprint per session</td>
+</tr>
+<tr>
+<td>Traffic shaping</td>
+<td>Mimics legitimate browsing patterns</td>
+</tr>
+<tr>
+<td>Polymorphic intervals</td>
+<td>Cryptographic jitter on beacon timing</td>
+</tr>
+<tr>
+<td>Server-side overrides</td>
+<td>Sleep and jitter tuning via <code>BeaconResponse</code></td>
+</tr>
+<tr>
+<td>Automatic failover</td>
+<td>Cascading transport channel fallback (HTTPS -> DNS -> DoH -> Raw L2)</td>
+</tr>
+<tr>
+<td>Deterministic routing</td>
+<td><code>X-Request-ID</code> header for O(1) session resolution</td>
+</tr>
+</table>
 
 ---
 
@@ -226,16 +227,44 @@ python3 -m c2server --db c2.db --keys server_keys.pem
 
 ### Components
 
-| Component | Description |
-|-----------|-------------|
-| ECDH P-256 | Persisted server key exchange matching Go implant protocol exactly |
-| AES-256-GCM | Encrypted beacon traffic with traffic shaping |
-| HTTPS listener | Starlette + uvicorn with TLS 1.2+ hardening, O(1) session lookup via X-Request-ID |
-| DNS listener | TXT record C2 with base32 encoding and response truncation |
-| Polymorphic routing | 18 rotating beacon paths + default path |
-| SQLite backend | Sessions, tasks, results, loot, listeners (WAL mode, per-thread connections) |
-| Rich CLI | Catppuccin Mocha themed tables, panels, and status display |
-| Context switching | Main context (sessions/listeners/loot) and implant context (shell/upload/persist/etc) |
+<table>
+<tr>
+<th>Component</th>
+<th>Description</th>
+</tr>
+<tr>
+<td>ECDH P-256</td>
+<td>Persisted server key exchange matching Go implant protocol exactly</td>
+</tr>
+<tr>
+<td>AES-256-GCM</td>
+<td>Encrypted beacon traffic with traffic shaping</td>
+</tr>
+<tr>
+<td>HTTPS listener</td>
+<td>Starlette + uvicorn with TLS 1.2+ hardening, O(1) session lookup via X-Request-ID</td>
+</tr>
+<tr>
+<td>DNS listener</td>
+<td>TXT record C2 with base32 encoding and response truncation</td>
+</tr>
+<tr>
+<td>Polymorphic routing</td>
+<td>18 rotating beacon paths + default path</td>
+</tr>
+<tr>
+<td>SQLite backend</td>
+<td>Sessions, tasks, results, loot, listeners (WAL mode, per-thread connections)</td>
+</tr>
+<tr>
+<td>Rich CLI</td>
+<td>Catppuccin Mocha themed tables, panels, and status display</td>
+</tr>
+<tr>
+<td>Context switching</td>
+<td>Main context (sessions/listeners/loot) and implant context (shell/upload/persist/etc)</td>
+</tr>
+</table>
 
 ### Operator Commands
 
@@ -249,44 +278,49 @@ python3 -m c2server --db c2.db --keys server_keys.pem
 
 36 modules for deep host-level blending (`pkg/stealth/`):
 
-| Module | File | Description |
-|--------|------|-------------|
-| Argv masquerade | `process_blend.go` | Full `/proc/[pid]` profile mimicry (FDs, CWD, OOM score) |
-| Process genealogy | `genealogy.go` | Double-fork re-parenting to PID 1 |
-| PID manipulation | `pid_manip.go` | Fork-burn PIDs inside PID namespace to avoid PID 1 |
-| PID recycling defense | `pid_recycle.go` | Land in dense PID regions matching system services |
-| eBPF cloaking | `ebpf_cloak.go` | BPF map-based PID hide list (stub filter, map functional) |
-| Environment cloning | `env_clone.go` | Clone env vars from live target process |
-| Network blending | `network_blend.go` | Fake connections and service banner responders |
-| Decoy processes | `decoy.go` | Spawn and manage decoy service processes |
-| History obfuscation | `history.go` | Shell history manipulation and RC file injection |
-| Cgroup camouflage | `cgroup_camo.go` | Mimic systemd service cgroup hierarchy |
-| Namespace hiding | `ns_hide.go` | Container ID spoofing and namespace obfuscation |
-| Nested namespaces | `ns_layers.go` | Outer decoy + inner operational namespace |
-| Group blending | `group_blend.go` | Match supplementary groups of target service |
-| Capability management | `capabilities.go` | Ambient capability escalation |
-| Syscall proxying | `syscall_proxy.go` | Ptrace-based syscall injection into target processes |
-| Memory spoofing | `mem_spoof.go` | `/proc/[pid]/maps` region name spoofing via PR_SET_VMA |
-| TCP/IP fingerprinting | `tcpip_spoof.go` | Kernel TCP stack parameter spoofing |
-| D-Bus blending | `dbus_blend.go` | Register as legitimate D-Bus service |
-| lsof misdirection | `lsof_spoof.go` | FD spoofing via bind mounts |
-| Benign strings | `benign_strings.go` | Inject legitimate-looking strings into binary |
-| Seccomp awareness | `seccomp_aware.go` | Detect seccomp filters and adapt syscall behavior |
-| Socket inheritance | `socket_inherit.go` | Inherit sockets from target service for blending |
-| Timestamp freezing | `ts_freeze.go` | tmpfs timestamp manipulation for anti-forensics |
-| Polymorphic engine | `polymorphic.go` | XOR-encrypt data regions when analysis detected |
-| Exe link spoofing | `exe_spoof.go` | `/proc/self/exe` manipulation via PR_SET_MM_EXE_FILE |
-| Seccomp forensic block | `seccomp_notif.go` | BPF filter blocks ptrace/perf_event/process_vm_readv |
-| Kernel keyring storage | `keyring_store.go` | Store secrets in kernel memory (invisible to memory forensics) |
-| io_uring covert I/O | `iouring.go` | Shared ring buffer I/O bypassing syscall-level monitoring |
-| Anti-dump regions | `antidump.go` | MADV_DONTDUMP and MADV_WIPEONFORK memory protection |
-| Cross-process injection | `vmwrite_inject.go` | process_vm_writev shellcode injection without ptrace |
-| Userfaultfd decoy | `uffd_decoy.go` | Serve fake memory pages to forensic tools via page fault handler |
-| Kernel tunable manipulation | `ktune.go` | Disable kprobes, ftrace, perf via /proc/sys and /sys/kernel |
-| Abstract unix sockets | `abstract_sock.go` | Filesystem-free IPC via abstract namespace sockets |
-| Fileless execution | `memfd_exec.go` | memfd_create + execveat for diskless ELF execution |
-| eBPF program pinning | `bpf_pin.go` | Persistent kernel hooks via bpffs that survive process death |
-| Landlock self-sandboxing | `landlock_cage.go` | Unprivileged Landlock LSM profiles for camouflage |
+<table>
+<tr>
+<th>Module</th>
+<th>File</th>
+<th>Description</th>
+</tr>
+<tr><td>Argv masquerade</td><td><code>process_blend.go</code></td><td>Full <code>/proc/[pid]</code> profile mimicry (FDs, CWD, OOM score)</td></tr>
+<tr><td>Process genealogy</td><td><code>genealogy.go</code></td><td>Double-fork re-parenting to PID 1</td></tr>
+<tr><td>PID manipulation</td><td><code>pid_manip.go</code></td><td>Fork-burn PIDs inside PID namespace to avoid PID 1</td></tr>
+<tr><td>PID recycling defense</td><td><code>pid_recycle.go</code></td><td>Land in dense PID regions matching system services</td></tr>
+<tr><td>eBPF cloaking</td><td><code>ebpf_cloak.go</code></td><td>BPF map-based PID hide list (stub filter, map functional)</td></tr>
+<tr><td>Environment cloning</td><td><code>env_clone.go</code></td><td>Clone env vars from live target process</td></tr>
+<tr><td>Network blending</td><td><code>network_blend.go</code></td><td>Fake connections and service banner responders</td></tr>
+<tr><td>Decoy processes</td><td><code>decoy.go</code></td><td>Spawn and manage decoy service processes</td></tr>
+<tr><td>History obfuscation</td><td><code>history.go</code></td><td>Shell history manipulation and RC file injection</td></tr>
+<tr><td>Cgroup camouflage</td><td><code>cgroup_camo.go</code></td><td>Mimic systemd service cgroup hierarchy</td></tr>
+<tr><td>Namespace hiding</td><td><code>ns_hide.go</code></td><td>Container ID spoofing and namespace obfuscation</td></tr>
+<tr><td>Nested namespaces</td><td><code>ns_layers.go</code></td><td>Outer decoy + inner operational namespace</td></tr>
+<tr><td>Group blending</td><td><code>group_blend.go</code></td><td>Match supplementary groups of target service</td></tr>
+<tr><td>Capability management</td><td><code>capabilities.go</code></td><td>Ambient capability escalation</td></tr>
+<tr><td>Syscall proxying</td><td><code>syscall_proxy.go</code></td><td>Ptrace-based syscall injection into target processes</td></tr>
+<tr><td>Memory spoofing</td><td><code>mem_spoof.go</code></td><td><code>/proc/[pid]/maps</code> region name spoofing via PR_SET_VMA</td></tr>
+<tr><td>TCP/IP fingerprinting</td><td><code>tcpip_spoof.go</code></td><td>Kernel TCP stack parameter spoofing</td></tr>
+<tr><td>D-Bus blending</td><td><code>dbus_blend.go</code></td><td>Register as legitimate D-Bus service</td></tr>
+<tr><td>lsof misdirection</td><td><code>lsof_spoof.go</code></td><td>FD spoofing via bind mounts</td></tr>
+<tr><td>Benign strings</td><td><code>benign_strings.go</code></td><td>Inject legitimate-looking strings into binary</td></tr>
+<tr><td>Seccomp awareness</td><td><code>seccomp_aware.go</code></td><td>Detect seccomp filters and adapt syscall behavior</td></tr>
+<tr><td>Socket inheritance</td><td><code>socket_inherit.go</code></td><td>Inherit sockets from target service for blending</td></tr>
+<tr><td>Timestamp freezing</td><td><code>ts_freeze.go</code></td><td>tmpfs timestamp manipulation for anti-forensics</td></tr>
+<tr><td>Polymorphic engine</td><td><code>polymorphic.go</code></td><td>XOR-encrypt data regions when analysis detected</td></tr>
+<tr><td>Exe link spoofing</td><td><code>exe_spoof.go</code></td><td><code>/proc/self/exe</code> manipulation via PR_SET_MM_EXE_FILE</td></tr>
+<tr><td>Seccomp forensic block</td><td><code>seccomp_notif.go</code></td><td>BPF filter blocks ptrace/perf_event/process_vm_readv</td></tr>
+<tr><td>Kernel keyring storage</td><td><code>keyring_store.go</code></td><td>Store secrets in kernel memory (invisible to memory forensics)</td></tr>
+<tr><td>io_uring covert I/O</td><td><code>iouring.go</code></td><td>Shared ring buffer I/O bypassing syscall-level monitoring</td></tr>
+<tr><td>Anti-dump regions</td><td><code>antidump.go</code></td><td>MADV_DONTDUMP and MADV_WIPEONFORK memory protection</td></tr>
+<tr><td>Cross-process injection</td><td><code>vmwrite_inject.go</code></td><td>process_vm_writev shellcode injection without ptrace</td></tr>
+<tr><td>Userfaultfd decoy</td><td><code>uffd_decoy.go</code></td><td>Serve fake memory pages to forensic tools via page fault handler</td></tr>
+<tr><td>Kernel tunable manipulation</td><td><code>ktune.go</code></td><td>Disable kprobes, ftrace, perf via /proc/sys and /sys/kernel</td></tr>
+<tr><td>Abstract unix sockets</td><td><code>abstract_sock.go</code></td><td>Filesystem-free IPC via abstract namespace sockets</td></tr>
+<tr><td>Fileless execution</td><td><code>memfd_exec.go</code></td><td>memfd_create + execveat for diskless ELF execution</td></tr>
+<tr><td>eBPF program pinning</td><td><code>bpf_pin.go</code></td><td>Persistent kernel hooks via bpffs that survive process death</td></tr>
+<tr><td>Landlock self-sandboxing</td><td><code>landlock_cage.go</code></td><td>Unprivileged Landlock LSM profiles for camouflage</td></tr>
+</table>
 
 ---
 
@@ -331,18 +365,22 @@ python3 -m c2server --db c2.db --keys server_keys.pem
 
 Beyond standard persistence (cron, systemd, init.d, bashrc), the framework includes advanced mechanisms:
 
-| Method | Description |
-|--------|-------------|
-| Systemd generators | `/etc/systemd/system-generators/` -- runs before all units at boot |
-| NSS modules | `/etc/nsswitch.conf` injection -- triggered by any DNS/user lookup |
-| Logrotate hooks | `/etc/logrotate.d/` post-rotate scripts -- periodic execution |
-| DHCP client hooks | `/etc/dhcp/dhclient-exit-hooks.d/` -- runs on network events |
-| APT hooks | `/etc/apt/apt.conf.d/` -- executes on package operations |
-| Audit dispatcher | `/etc/audit/plugins.d/` -- runs on audit events |
-| binfmt_misc | `/etc/binfmt.d/` -- triggers on specific file execution |
-| Modprobe hooks | `/etc/modprobe.d/` install commands -- runs on module load |
-| NM dispatcher | `/etc/NetworkManager/dispatcher.d/` -- runs on network state changes |
-| Sysctl.d | `/etc/sysctl.d/` -- kernel tunables applied at boot (disables tracing/debugging) |
+<table>
+<tr>
+<th>Method</th>
+<th>Description</th>
+</tr>
+<tr><td>Systemd generators</td><td><code>/etc/systemd/system-generators/</code> -- runs before all units at boot</td></tr>
+<tr><td>NSS modules</td><td><code>/etc/nsswitch.conf</code> injection -- triggered by any DNS/user lookup</td></tr>
+<tr><td>Logrotate hooks</td><td><code>/etc/logrotate.d/</code> post-rotate scripts -- periodic execution</td></tr>
+<tr><td>DHCP client hooks</td><td><code>/etc/dhcp/dhclient-exit-hooks.d/</code> -- runs on network events</td></tr>
+<tr><td>APT hooks</td><td><code>/etc/apt/apt.conf.d/</code> -- executes on package operations</td></tr>
+<tr><td>Audit dispatcher</td><td><code>/etc/audit/plugins.d/</code> -- runs on audit events</td></tr>
+<tr><td>binfmt_misc</td><td><code>/etc/binfmt.d/</code> -- triggers on specific file execution</td></tr>
+<tr><td>Modprobe hooks</td><td><code>/etc/modprobe.d/</code> install commands -- runs on module load</td></tr>
+<tr><td>NM dispatcher</td><td><code>/etc/NetworkManager/dispatcher.d/</code> -- runs on network state changes</td></tr>
+<tr><td>Sysctl.d</td><td><code>/etc/sysctl.d/</code> -- kernel tunables applied at boot (disables tracing/debugging)</td></tr>
+</table>
 
 ---
 
@@ -401,8 +439,11 @@ CLI task arguments are serialized as `map[string]string` -- all values must be s
 │   ├── listeners/                   HTTPS + DNS listeners
 │   ├── cli/                         cmd2 app, Rich theme, commands
 │   └── requirements.txt             Python dependencies
-├── docs/                            Planning docs and landing page
-│   └── index.html                   Project landing page
+├── docs/                            GitHub Pages + assets
+│   ├── index.html                   Project landing page
+│   └── assets/
+│       ├── logo-dark.svg            Logo for dark theme
+│       └── logo-light.svg           Logo for light theme
 ├── Makefile                         Build targets
 ├── Dockerfile                       Container build
 ├── go.mod
@@ -411,13 +452,32 @@ CLI task arguments are serialized as `map[string]string` -- all values must be s
 
 ### Key Patterns
 
-| Pattern | Implementation |
-|---------|----------------|
-| Two-stage execution | Parent runs checks, re-execs into namespace child |
-| Compile-time config | All settings baked via `-ldflags`, no runtime config files |
-| Transport failover | HTTPS -> DNS -> DoH -> Raw L2 cascade |
-| Memory-first | `ProtectedConfig`, `[]byte` APIs, deterministic shredding |
-| Kernel-level hiding | Namespace isolation + eBPF cloaking + procfs manipulation |
+<table>
+<tr>
+<th>Pattern</th>
+<th>Implementation</th>
+</tr>
+<tr>
+<td>Two-stage execution</td>
+<td>Parent runs checks, re-execs into namespace child</td>
+</tr>
+<tr>
+<td>Compile-time config</td>
+<td>All settings baked via <code>-ldflags</code>, no runtime config files</td>
+</tr>
+<tr>
+<td>Transport failover</td>
+<td>HTTPS -> DNS -> DoH -> Raw L2 cascade</td>
+</tr>
+<tr>
+<td>Memory-first</td>
+<td><code>ProtectedConfig</code>, <code>[]byte</code> APIs, deterministic shredding</td>
+</tr>
+<tr>
+<td>Kernel-level hiding</td>
+<td>Namespace isolation + eBPF cloaking + procfs manipulation</td>
+</tr>
+</table>
 
 ---
 
@@ -425,16 +485,128 @@ CLI task arguments are serialized as `map[string]string` -- all values must be s
 
 All configuration is compile-time via `pkg/config/config.go`. Override defaults with `-ldflags` at build time:
 
-| Field | Default | Description |
-|-------|---------|-------------|
-| `C2Servers` | `https://127.0.0.1:8443/api/v1/beacon` | Primary HTTPS endpoints |
-| `DNSDomains` | `ns1.example.com` | DNS fallback domains |
-| `CallbackInterval` | 30s | Beacon interval |
-| `Jitter` | 0.2 | Sleep jitter (0.0-1.0) |
-| `MasqueradeName` | `accounts-daemon` | Process name disguise |
-| `KillDate` | +30 days | Auto-expiry date |
-| `SandboxEvasion` | true | VM/sandbox detection |
-| `EDRAwareness` | true | EDR behavioral adaptation |
+<table>
+<tr>
+<th>Field</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+<tr>
+<td><code>C2Servers</code></td>
+<td><code>https://127.0.0.1:8443/api/v1/beacon</code></td>
+<td>Primary HTTPS endpoints</td>
+</tr>
+<tr>
+<td><code>DNSDomains</code></td>
+<td><code>ns1.example.com</code></td>
+<td>DNS fallback domains</td>
+</tr>
+<tr>
+<td><code>CallbackInterval</code></td>
+<td>30s</td>
+<td>Beacon interval</td>
+</tr>
+<tr>
+<td><code>Jitter</code></td>
+<td>0.2</td>
+<td>Sleep jitter (0.0-1.0)</td>
+</tr>
+<tr>
+<td><code>MasqueradeName</code></td>
+<td><code>accounts-daemon</code></td>
+<td>Process name disguise</td>
+</tr>
+<tr>
+<td><code>KillDate</code></td>
+<td>+30 days</td>
+<td>Auto-expiry date</td>
+</tr>
+<tr>
+<td><code>SandboxEvasion</code></td>
+<td>true</td>
+<td>VM/sandbox detection</td>
+</tr>
+<tr>
+<td><code>EDRAwareness</code></td>
+<td>true</td>
+<td>EDR behavioral adaptation</td>
+</tr>
+</table>
+
+### Build Targets
+
+```bash
+make build            # Development build (stripped, static)
+make build-arm64      # ARM64 cross-compile
+make build-garble     # Obfuscated build
+make build-release    # Production release (garble + UPX + patching)
+make check            # Full CI check (vet + fmt + build)
+make strings-check    # Check for Go metadata leaks
+make opsec-check      # OPSEC verification suite
+make clean            # Remove build artifacts
+```
+
+---
+
+## Platform Support
+
+<table>
+<tr>
+<th>Capability</th>
+<th>Linux x86_64</th>
+<th>Linux ARM64</th>
+</tr>
+<tr>
+<td>Namespace isolation</td>
+<td>Full (PID + Mount + Net + UTS + Cgroup)</td>
+<td>Full</td>
+</tr>
+<tr>
+<td>HTTPS C2</td>
+<td>Full (domain fronting, JA3 randomization)</td>
+<td>Full</td>
+</tr>
+<tr>
+<td>DNS C2</td>
+<td>Full (TXT records, DoH)</td>
+<td>Full</td>
+</tr>
+<tr>
+<td>Raw L2 C2</td>
+<td>Full (AF_PACKET)</td>
+<td>Full</td>
+</tr>
+<tr>
+<td>eBPF cloaking</td>
+<td>Full (kernel 5.10+)</td>
+<td>Full (kernel 5.10+)</td>
+</tr>
+<tr>
+<td>io_uring I/O</td>
+<td>Full (kernel 5.1+)</td>
+<td>Full (kernel 5.1+)</td>
+</tr>
+<tr>
+<td>Fileless execution</td>
+<td>Full (memfd_create)</td>
+<td>Full</td>
+</tr>
+<tr>
+<td>Process masquerade</td>
+<td>Full (prctl + /proc/self/mem)</td>
+<td>Full</td>
+</tr>
+<tr>
+<td>Garble obfuscation</td>
+<td>Full</td>
+<td>Full</td>
+</tr>
+<tr>
+<td>C2 server</td>
+<td>Full (Python 3.9+)</td>
+<td>Full (Python 3.9+)</td>
+</tr>
+</table>
 
 ---
 
@@ -460,14 +632,75 @@ The test implant runs without namespace isolation or evasion checks, making it s
 
 ---
 
-## Legal
+## Security
 
-This software is provided for authorized penetration testing, red team operations, and security research only. The authors assume no liability for misuse. Users are solely responsible for ensuring they have proper authorization before deploying this tool against any system.
+### Vulnerability Reporting
+
+**Report security issues via:**
+- GitHub Security Advisories (preferred)
+- Private disclosure to maintainers
+- Responsible disclosure timeline (90 days)
+
+**Do NOT:**
+- Open public GitHub issues for vulnerabilities
+- Disclose before coordination with maintainers
+- Exploit vulnerabilities in unauthorized contexts
+
+### Threat Model
+
+**In scope:**
+- Hiding from standard system monitoring and forensic tools
+- Encrypting C2 traffic in transit with multiple fallback channels
+- Authorized testing with known (or unknown) endpoint monitoring
+- Evading userspace forensic collection (LiME, AVML, volatility)
+
+**Out of scope:**
+- Defeating hardware-based security monitoring (TPM, HSM)
+- Evading kernel-level integrity monitoring (IMA/EVM)
+- Cross-platform operation (Linux only by design)
+
+### What Aquifer Does NOT Do
+
+Aquifer is a **post-exploitation framework**, not a general-purpose attack tool:
+
+- **Not an initial access tool** -- No vulnerability scanning, exploitation, or phishing
+- **Not a lateral movement tool** -- No credential spraying or pass-the-hash
+- **Not a data exfiltration tool** -- File upload/download exists but is not the focus
+- **Not cross-platform** -- Linux namespace isolation is the core design
+
+---
+
+## License
+
+MIT License
+
+Copyright &copy; 2026 Real-Fruit-Snacks
+
+```
+THIS SOFTWARE IS PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND.
+THE AUTHORS ARE NOT LIABLE FOR ANY DAMAGES ARISING FROM USE.
+USE AT YOUR OWN RISK AND ONLY WITH PROPER AUTHORIZATION.
+```
+
+---
+
+## Resources
+
+- **GitHub**: [github.com/Real-Fruit-Snacks/Aquifer](https://github.com/Real-Fruit-Snacks/Aquifer)
+- **Releases**: [Latest Release](https://github.com/Real-Fruit-Snacks/Aquifer/releases/latest)
+- **Issues**: [Report a Bug](https://github.com/Real-Fruit-Snacks/Aquifer/issues)
+- **Security**: [SECURITY.md](SECURITY.md)
+- **Contributing**: [CONTRIBUTING.md](CONTRIBUTING.md)
+- **Changelog**: [CHANGELOG.md](CHANGELOG.md)
 
 ---
 
 <div align="center">
 
-**Aquifer** -- hidden infrastructure, deep below the surface.
+**Part of the Real-Fruit-Snacks water-themed security toolkit**
+
+[Aquifer](https://github.com/Real-Fruit-Snacks/Aquifer) • [Cascade](https://github.com/Real-Fruit-Snacks/Cascade) • [Conduit](https://github.com/Real-Fruit-Snacks/Conduit) • [Deadwater](https://github.com/Real-Fruit-Snacks/Deadwater) • [Deluge](https://github.com/Real-Fruit-Snacks/Deluge) • [Depth](https://github.com/Real-Fruit-Snacks/Depth) • [Dew](https://github.com/Real-Fruit-Snacks/Dew) • [Droplet](https://github.com/Real-Fruit-Snacks/Droplet) • [Fathom](https://github.com/Real-Fruit-Snacks/Fathom) • [Flux](https://github.com/Real-Fruit-Snacks/Flux) • [Grotto](https://github.com/Real-Fruit-Snacks/Grotto) • [HydroShot](https://github.com/Real-Fruit-Snacks/HydroShot) • [Maelstrom](https://github.com/Real-Fruit-Snacks/Maelstrom) • [Rapids](https://github.com/Real-Fruit-Snacks/Rapids) • [Ripple](https://github.com/Real-Fruit-Snacks/Ripple) • [Riptide](https://github.com/Real-Fruit-Snacks/Riptide) • [Runoff](https://github.com/Real-Fruit-Snacks/Runoff) • [Seep](https://github.com/Real-Fruit-Snacks/Seep) • [Shallows](https://github.com/Real-Fruit-Snacks/Shallows) • [Siphon](https://github.com/Real-Fruit-Snacks/Siphon) • [Slipstream](https://github.com/Real-Fruit-Snacks/Slipstream) • [Spillway](https://github.com/Real-Fruit-Snacks/Spillway) • [Surge](https://github.com/Real-Fruit-Snacks/Surge) • [Tidemark](https://github.com/Real-Fruit-Snacks/Tidemark) • [Tidepool](https://github.com/Real-Fruit-Snacks/Tidepool) • [Undercurrent](https://github.com/Real-Fruit-Snacks/Undercurrent) • [Undertow](https://github.com/Real-Fruit-Snacks/Undertow) • [Vapor](https://github.com/Real-Fruit-Snacks/Vapor) • [Wellspring](https://github.com/Real-Fruit-Snacks/Wellspring) • [Whirlpool](https://github.com/Real-Fruit-Snacks/Whirlpool)
+
+*Remember: With great power comes great responsibility.*
 
 </div>

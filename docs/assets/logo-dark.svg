@@ -1,0 +1,127 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 220" fill="none">
+  <defs>
+    <!-- Primary gradient: red to maroon -->
+    <linearGradient id="g1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#f38ba8"/>
+      <stop offset="40%" stop-color="#eba0ac"/>
+      <stop offset="100%" stop-color="#f5c2e7"/>
+    </linearGradient>
+
+    <!-- Accent gradient: maroon to red -->
+    <linearGradient id="g2" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#eba0ac"/>
+      <stop offset="100%" stop-color="#f38ba8"/>
+    </linearGradient>
+
+    <!-- Icon gradient: vertical for the mark -->
+    <linearGradient id="g3" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#f38ba8"/>
+      <stop offset="50%" stop-color="#eba0ac"/>
+      <stop offset="100%" stop-color="#f5c2e7"/>
+    </linearGradient>
+
+    <!-- Ring gradient for concentric rings -->
+    <linearGradient id="g4" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#f38ba8"/>
+      <stop offset="100%" stop-color="#eba0ac"/>
+    </linearGradient>
+
+    <!-- Subtle glow for the logomark -->
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="3" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+
+    <!-- Faint outer glow -->
+    <filter id="softglow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="6" result="blur"/>
+      <feFlood flood-color="#f38ba8" flood-opacity="0.15" result="color"/>
+      <feComposite in="color" in2="blur" operator="in" result="shadow"/>
+      <feComposite in="SourceGraphic" in2="shadow" operator="over"/>
+    </filter>
+
+    <!-- Center glow -->
+    <filter id="centerglow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="4" result="blur"/>
+      <feFlood flood-color="#f38ba8" flood-opacity="0.4" result="color"/>
+      <feComposite in="color" in2="blur" operator="in" result="glow"/>
+      <feComposite in="SourceGraphic" in2="glow" operator="over"/>
+    </filter>
+  </defs>
+
+  <!-- ===================== LOGOMARK ===================== -->
+  <g transform="translate(58, 40)" filter="url(#softglow)">
+
+    <!-- Hexagonal frame — thin, elegant -->
+    <path d="M 80 6 L 140 38 L 140 102 L 80 134 L 20 102 L 20 38 Z"
+          fill="none" stroke="url(#g1)" stroke-width="1.5" opacity="0.4"/>
+
+    <!-- Inner hex subtle fill -->
+    <path d="M 80 14 L 134 42 L 134 98 L 80 126 L 26 98 L 26 42 Z"
+          fill="#f38ba8" opacity="0.03"/>
+
+    <!-- Namespace Isolation Rings — concentric circles radiating from center -->
+
+    <!-- Ring 1 (innermost, solid) — strongest containment boundary -->
+    <circle cx="80" cy="70" r="16" fill="none" stroke="url(#g4)" stroke-width="1.8" opacity="0.8"/>
+
+    <!-- Ring 2 (middle, solid) -->
+    <circle cx="80" cy="70" r="30" fill="none" stroke="url(#g4)" stroke-width="1.4" opacity="0.5"/>
+
+    <!-- Ring 3 (outer, dashed) — breached boundary -->
+    <circle cx="80" cy="70" r="44" fill="none" stroke="url(#g2)" stroke-width="1.2" opacity="0.3"
+            stroke-dasharray="6 4"/>
+
+    <!-- Beacon module dots on Ring 1 -->
+    <circle cx="96" cy="70" r="2" fill="#f38ba8" opacity="0.85"/>
+    <circle cx="72" cy="56" r="2" fill="#eba0ac" opacity="0.75"/>
+    <circle cx="72" cy="84" r="1.8" fill="#f5c2e7" opacity="0.7"/>
+
+    <!-- Beacon module dots on Ring 2 -->
+    <circle cx="110" cy="70" r="1.8" fill="#eba0ac" opacity="0.65"/>
+    <circle cx="80" cy="40" r="1.8" fill="#f38ba8" opacity="0.6"/>
+    <circle cx="56" cy="85" r="1.5" fill="#f5c2e7" opacity="0.55"/>
+    <circle cx="100" cy="52" r="1.5" fill="#eba0ac" opacity="0.5"/>
+
+    <!-- Beacon module dots on Ring 3 (breached) -->
+    <circle cx="80" cy="26" r="1.5" fill="#f38ba8" opacity="0.4"/>
+    <circle cx="117" cy="48" r="1.3" fill="#eba0ac" opacity="0.35"/>
+    <circle cx="43" cy="52" r="1.3" fill="#f5c2e7" opacity="0.35"/>
+    <circle cx="117" cy="92" r="1.2" fill="#eba0ac" opacity="0.3"/>
+
+    <!-- Center node — bright implant core with glow -->
+    <g filter="url(#centerglow)">
+      <circle cx="80" cy="70" r="5" fill="#f38ba8" opacity="0.95"/>
+    </g>
+    <circle cx="80" cy="70" r="2.5" fill="#1e1e2e"/>
+    <circle cx="80" cy="70" r="8" fill="none" stroke="#f38ba8" stroke-width="0.5" opacity="0.3"/>
+
+    <!-- Corner accents on hex -->
+    <circle cx="80" cy="6" r="2" fill="#f38ba8" opacity="0.3"/>
+    <circle cx="80" cy="134" r="2" fill="#eba0ac" opacity="0.3"/>
+  </g>
+
+  <!-- ===================== TYPOGRAPHY ===================== -->
+
+  <!-- "AQUIFER" — clean, bold, wide-tracked -->
+  <text x="430" y="108"
+        font-family="'SF Pro Display', 'Inter', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif"
+        font-size="66" font-weight="800" letter-spacing="18"
+        fill="url(#g1)" text-anchor="middle">AQUIFER</text>
+
+  <!-- Thin separator line -->
+  <line x1="280" y1="128" x2="580" y2="128"
+        stroke="url(#g1)" stroke-width="0.8" opacity="0.25"/>
+
+  <!-- Tagline — refined, subtle -->
+  <text x="430" y="152"
+        font-family="'SF Mono', 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace"
+        font-size="11.5" font-weight="400" letter-spacing="5.5"
+        fill="#7f849c" text-anchor="middle">POST-EXPLOITATION FRAMEWORK</text>
+
+  <!-- Version / descriptor — very subtle -->
+  <text x="430" y="172"
+        font-family="'SF Mono', 'JetBrains Mono', 'Fira Code', monospace"
+        font-size="9" font-weight="400" letter-spacing="3"
+        fill="#585b70" text-anchor="middle">GO  ·  NAMESPACES  ·  C2  ·  STEALTH</text>
+</svg>
