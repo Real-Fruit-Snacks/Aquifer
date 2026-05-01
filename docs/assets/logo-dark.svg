@@ -18,15 +18,19 @@
   <line x1="400" y1="140" x2="400" y2="200" stroke="#313244" stroke-width="1"/>
   <line x1="600" y1="140" x2="600" y2="200" stroke="#313244" stroke-width="1"/>
 
-  <text x="20" y="158" font-family="'JetBrains Mono', 'SF Mono', 'Fira Code', 'Cascadia Code', monospace" font-size="9" font-weight="600" fill="#6c7086" letter-spacing="2">ISOLATION</text>
-  <text x="20" y="186" font-family="'Inter', 'SF Pro Display', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="22" font-weight="700" fill="#cdd6f4" letter-spacing="-1">5<tspan fill="#74c7ec" font-size="14"> × NAMESPACE</tspan></text>
+  <text x="20" y="158" font-family="'JetBrains Mono', 'Courier New', monospace" font-size="10" font-weight="600" fill="#6c7086" letter-spacing="1">ISOLATION</text>
+  <text x="20" y="175" font-family="'Inter', 'Helvetica Neue', Arial, sans-serif" font-size="16" font-weight="700" fill="#74c7ec" letter-spacing="0">5 NAMESPACES</text>
+  <text x="20" y="190" font-family="'JetBrains Mono', 'Courier New', monospace" font-size="8" fill="#585b70" letter-spacing="0">PID · NET · MNT · USER · UTS</text>
 
-  <text x="220" y="158" font-family="'JetBrains Mono', 'SF Mono', 'Fira Code', 'Cascadia Code', monospace" font-size="9" font-weight="600" fill="#6c7086" letter-spacing="2">CHANNELS</text>
-  <text x="220" y="186" font-family="'Inter', 'SF Pro Display', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="22" font-weight="700" fill="#cdd6f4" letter-spacing="-1">4<tspan fill="#74c7ec" font-size="14"> × FAILOVER C2</tspan></text>
+  <text x="220" y="158" font-family="'JetBrains Mono', 'Courier New', monospace" font-size="10" font-weight="600" fill="#6c7086" letter-spacing="1">CHANNELS</text>
+  <text x="220" y="175" font-family="'Inter', 'Helvetica Neue', Arial, sans-serif" font-size="16" font-weight="700" fill="#74c7ec" letter-spacing="0">4 FAILOVER</text>
+  <text x="220" y="190" font-family="'JetBrains Mono', 'Courier New', monospace" font-size="8" fill="#585b70" letter-spacing="0">POLYMORPHIC BEACONS</text>
 
-  <text x="420" y="158" font-family="'JetBrains Mono', 'SF Mono', 'Fira Code', 'Cascadia Code', monospace" font-size="9" font-weight="600" fill="#6c7086" letter-spacing="2">MODULES</text>
-  <text x="420" y="186" font-family="'Inter', 'SF Pro Display', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="22" font-weight="700" fill="#cdd6f4" letter-spacing="-1">36<tspan fill="#74c7ec" font-size="14"> × STEALTH</tspan></text>
+  <text x="420" y="158" font-family="'JetBrains Mono', 'Courier New', monospace" font-size="10" font-weight="600" fill="#6c7086" letter-spacing="1">MODULES</text>
+  <text x="420" y="175" font-family="'Inter', 'Helvetica Neue', Arial, sans-serif" font-size="16" font-weight="700" fill="#74c7ec" letter-spacing="0">36 STEALTH</text>
+  <text x="420" y="190" font-family="'JetBrains Mono', 'Courier New', monospace" font-size="8" fill="#585b70" letter-spacing="0">POST-EX · RECON · PERSIST</text>
 
-  <text x="620" y="158" font-family="'JetBrains Mono', 'SF Mono', 'Fira Code', 'Cascadia Code', monospace" font-size="9" font-weight="600" fill="#6c7086" letter-spacing="2">STACK</text>
-  <text x="620" y="186" font-family="'Inter', 'SF Pro Display', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="22" font-weight="700" fill="#cdd6f4" letter-spacing="-1">GO<tspan fill="#74c7ec" font-size="14"> 1.21+</tspan></text>
+  <text x="620" y="158" font-family="'JetBrains Mono', 'Courier New', monospace" font-size="10" font-weight="600" fill="#6c7086" letter-spacing="1">STACK</text>
+  <text x="620" y="175" font-family="'Inter', 'Helvetica Neue', Arial, sans-serif" font-size="16" font-weight="700" fill="#74c7ec" letter-spacing="0">GO 1.21+</text>
+  <text x="620" y="190" font-family="'JetBrains Mono', 'Courier New', monospace" font-size="8" fill="#585b70" letter-spacing="0">STATIC · CGO-FREE · LINUX</text>
 </svg>
