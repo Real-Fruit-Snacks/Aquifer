@@ -1,401 +1,273 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Aquifer — Post-Exploitation Framework</title>
-    <meta name="description" content="Linux post-exploitation framework using kernel namespace isolation. Multi-channel C2 with polymorphic beacons and 36 stealth modules.">
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ctext x='16' y='24' text-anchor='middle' font-family='Inter,sans-serif' font-size='24' font-weight='800' fill='%23f38ba8'%3EA%3C/text%3E%3C/svg%3E">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        *{margin:0;padding:0;box-sizing:border-box}
-        :root{
-            --accent1:#f38ba8;--accent2:#eba0ac;--accentmid:#f38ba8;
-            --accentrgb:243,139,168;
-            --text:#cdd6f4;--sub1:#bac2de;--sub0:#a6adc8;
-            --ov2:#9399b2;--ov1:#7f849c;--ov0:#6c7086;
-            --sf2:#585b70;--sf1:#45475a;--sf0:#313244;
-            --base:#1e1e2e;--mantle:#181825;--crust:#11111b;
-            --green:#a6e3a1;--yellow:#f9e2af;--red:#f38ba8;
-            --peach:#fab387;--mauve:#cba6f7;--teal:#94e2d5;
-        }
-        body{font-family:'Inter',system-ui,sans-serif;background:var(--crust);color:var(--text);line-height:1.7;overflow-x:hidden}
-        ::selection{background:rgba(var(--accentrgb),0.3);color:var(--text)}
-        .container{max-width:1140px;margin:0 auto;padding:0 28px}
-        code{font-family:'JetBrains Mono',monospace;background:var(--mantle);padding:2px 7px;border-radius:3px;font-size:.88em;color:var(--green)}
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Aquifer / Linux post-exploitation framework</title>
+<meta name="description" content="Linux post-exploitation framework with kernel namespace isolation. 4-channel C2 with failover, polymorphic beacons, 36 stealth modules, target keying.">
+<meta property="og:title" content="Aquifer — Linux post-ex framework">
+<meta property="og:description" content="5 namespaces · 4 C2 channels · 36 stealth modules · garble + UPX · authorization required.">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%231e1e2e'/%3E%3Ctext x='16' y='23' text-anchor='middle' font-family='Inter,sans-serif' font-size='20' font-weight='800' fill='%23cdd6f4'%3EA%3Ctspan fill='%2374c7ec'%3E.%3C/tspan%3E%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --base:#1e1e2e;--mantle:#181825;--crust:#11111b;
+  --sf0:#313244;--sf1:#45475a;--sf2:#585b70;
+  --ov0:#6c7086;--ov1:#7f849c;--ov2:#9399b2;
+  --sub0:#a6adc8;--sub1:#bac2de;--text:#cdd6f4;
+  --mauve:#cba6f7;--lav:#b4befe;--blue:#89b4fa;--sky:#89dceb;
+  --teal:#94e2d5;--green:#a6e3a1;--yellow:#f9e2af;--peach:#fab387;--red:#f38ba8;
+  --accent:#74c7ec; /* Aquifer's color — sapphire, deep groundwater */
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{background:var(--crust);color:var(--text);font-family:'Inter',system-ui,-apple-system,sans-serif;font-size:15px;line-height:1.5}
+::selection{background:var(--accent);color:var(--crust)}
+a{color:inherit;text-decoration:none}
+.mono{font-family:'JetBrains Mono','SF Mono',monospace}
 
-        /* ── Nav ── */
-        .nav{position:fixed;top:0;left:0;right:0;height:56px;background:rgba(17,17,27,0.8);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:1px solid rgba(49,50,68,0.5);z-index:1000;display:flex;align-items:center;justify-content:center}
-        .nav-inner{max-width:1140px;width:100%;padding:0 28px;display:flex;align-items:center;justify-content:space-between}
-        .nav-logo{font-family:'Inter',sans-serif;font-size:16px;font-weight:700;color:var(--text);text-decoration:none}
-        .nav-links{display:flex;align-items:center;gap:28px}
-        .nav-links a{font-size:13px;font-weight:500;color:var(--ov0);text-decoration:none;transition:color .2s}
-        .nav-links a:hover{color:var(--text)}
-        .nav-cta{background:linear-gradient(135deg,var(--accent1),var(--accentmid));color:var(--crust);padding:7px 18px;border-radius:8px;font-size:13px;font-weight:600;text-decoration:none;transition:box-shadow .2s,transform .2s}
-        .nav-cta:hover{box-shadow:0 0 20px rgba(var(--accentrgb),0.3);transform:translateY(-1px)}
+.status{background:var(--crust);border-bottom:1px solid var(--text);padding:10px 24px;display:flex;justify-content:space-between;font-family:'JetBrains Mono','SF Mono',monospace;font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:var(--ov2);position:sticky;top:0;z-index:10}
+.status .left{display:flex;gap:24px;flex-wrap:wrap}
+.status .right{display:flex;gap:16px;flex-wrap:wrap}
+.status b{color:var(--accent);font-weight:700}
+.status .dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--yellow);margin-right:6px;vertical-align:middle;animation:pulse 2.5s infinite}
+.status a{color:var(--ov2);transition:color .15s}
+.status a:hover{color:var(--text)}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
 
-        /* ── Hero ── */
-        .hero{padding:140px 0 80px;text-align:center;position:relative}
-        .hero::before{content:'';position:absolute;top:60px;left:50%;transform:translateX(-50%);width:800px;height:400px;background:radial-gradient(ellipse,rgba(var(--accentrgb),0.08) 0%,transparent 60%);pointer-events:none}
-        .hero-logo{position:relative;max-width:600px;margin:0 auto 32px}
-        .hero-logo img{width:100%;height:auto}
-        .hero-tagline{position:relative;font-size:clamp(24px,3.5vw,38px);font-weight:700;line-height:1.2;margin-bottom:16px;background:linear-gradient(135deg,var(--accent1),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-        .hero-desc{position:relative;font-size:16px;color:var(--ov0);max-width:560px;margin:0 auto 32px}
-        .hero-ctas{position:relative;display:flex;gap:12px;justify-content:center;margin-bottom:48px}
-        .btn-primary{background:linear-gradient(135deg,var(--accent1),var(--accentmid));color:var(--crust);padding:12px 28px;border-radius:8px;font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:600;text-decoration:none;transition:box-shadow .2s,transform .2s}
-        .btn-primary:hover{box-shadow:0 0 24px rgba(var(--accentrgb),0.35);transform:translateY(-2px)}
-        .btn-secondary{background:var(--sf0);color:var(--text);padding:12px 28px;border-radius:8px;border:1px solid var(--sf1);font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:500;text-decoration:none;transition:all .2s}
-        .btn-secondary:hover{background:var(--sf1);border-color:var(--sf2)}
+.hero{border-bottom:1px solid var(--text);padding:64px 24px 0}
+.hero-inner{max-width:1280px;margin:0 auto}
+.hero .pop{font-family:'JetBrains Mono','SF Mono',monospace;font-size:12px;font-weight:500;color:var(--ov1);letter-spacing:0.1em;text-transform:uppercase;display:block;margin-bottom:24px}
+.hero h1{font-family:'Inter',sans-serif;font-size:clamp(72px,13vw,180px);line-height:0.85;font-weight:800;letter-spacing:-0.05em;color:var(--text);margin-bottom:32px}
+.hero h1 .dot{color:var(--accent)}
+.hero-grid{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:0;border-top:1px solid var(--sf1)}
+.hero-grid > div{padding:20px 24px;border-right:1px solid var(--sf1)}
+.hero-grid > div:last-child{border-right:none}
+.hero-grid .label{font-family:'JetBrains Mono','SF Mono',monospace;font-size:10px;color:var(--ov0);letter-spacing:0.18em;text-transform:uppercase;margin-bottom:8px}
+.hero-grid .value{font-family:'Inter',sans-serif;font-size:28px;font-weight:700;color:var(--text);letter-spacing:-0.02em}
+.hero-grid .value .unit{color:var(--accent);font-size:0.55em;font-weight:600;margin-left:2px}
 
-        /* ── Terminal ── */
-        .terminal{position:relative;max-width:800px;margin:0 auto;background:var(--mantle);border:1px solid var(--sf0);border-radius:12px;overflow:hidden;box-shadow:0 8px 40px rgba(0,0,0,0.5),0 0 24px rgba(var(--accentrgb),0.06)}
-        .terminal-bar{background:var(--crust);padding:12px 16px;display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--sf0)}
-        .terminal-dot{width:12px;height:12px;border-radius:50%}
-        .terminal-dot:nth-child(1){background:var(--red)}
-        .terminal-dot:nth-child(2){background:var(--yellow)}
-        .terminal-dot:nth-child(3){background:var(--green)}
-        .terminal-label{flex:1;text-align:center;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ov0)}
-        .terminal-body{padding:24px;font-family:'JetBrains Mono',monospace;font-size:13px;line-height:1.9;text-align:left}
-        .terminal-body pre{margin:0;white-space:pre-wrap;word-wrap:break-word}
-        .t-g{color:var(--green)}.t-b{color:var(--accent1)}.t-m{color:var(--sub0)}.t-p{color:var(--peach)}
+.grid{display:grid;grid-template-columns:1fr 1fr;border-bottom:1px solid var(--sf1)}
+.cell{padding:48px 32px;border-right:1px solid var(--sf1);position:relative}
+.cell:last-child{border-right:none}
+.cell.full{grid-column:1/-1;border-right:none}
+.cell-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;padding-bottom:14px;border-bottom:1px dashed var(--sf1)}
+.cell-num{font-family:'JetBrains Mono','SF Mono',monospace;font-size:11px;color:var(--accent);letter-spacing:0.15em;font-weight:700}
+.cell-name{font-family:'Inter',sans-serif;font-size:13px;color:var(--ov2);letter-spacing:0.2em;text-transform:uppercase;font-weight:500}
+.cell h2{font-size:36px;line-height:1.05;font-weight:700;letter-spacing:-0.025em;margin-bottom:16px}
+.cell h2 mark{background:var(--accent);color:var(--crust);padding:0 6px;font-style:normal}
+.cell p{color:var(--sub0);font-size:16px;line-height:1.65;margin-bottom:14px}
+.cell p strong{color:var(--text);font-weight:600}
+.cell p code{font-family:'JetBrains Mono','SF Mono',monospace;font-size:13px;background:var(--mantle);padding:2px 7px;border-radius:3px;color:var(--green)}
 
-        /* ── Stats ── */
-        .stats{display:flex;justify-content:center;gap:40px;padding:60px 0;position:relative}
-        .stat{text-align:center}
-        .stat-num{font-family:'JetBrains Mono',monospace;font-size:36px;font-weight:700;color:var(--accent1);line-height:1}
-        .stat-label{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--sf2);margin-top:6px;letter-spacing:2px;text-transform:uppercase}
-        .stat-div{width:1px;height:48px;background:var(--sf0);align-self:center}
+.feat{display:grid;grid-template-columns:auto 1fr;gap:18px 24px;margin-top:24px;font-family:'JetBrains Mono','SF Mono',monospace;font-size:13px}
+.feat .k{color:var(--accent);font-weight:700;letter-spacing:0.05em}
+.feat .v{color:var(--sub1);line-height:1.65}
+.feat .v b{color:var(--text);font-weight:600}
 
-        /* ── Sections ── */
-        section{padding:80px 0}
-        .section-label{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600;color:var(--accent1);letter-spacing:3px;text-transform:uppercase;margin-bottom:12px}
-        .section-title{font-size:clamp(28px,4vw,40px);font-weight:700;margin-bottom:12px;letter-spacing:-.02em}
-        .section-desc{font-size:15px;color:var(--ov0);margin-bottom:48px;max-width:560px}
-        .gradient-line{height:1px;background:linear-gradient(90deg,transparent,var(--accent1),var(--accent2),transparent);margin:0 auto;max-width:600px}
+pre.code{background:var(--mantle);border:1px solid var(--text);border-left:6px solid var(--accent);padding:20px 24px;font-family:'JetBrains Mono','SF Mono',monospace;font-size:13px;line-height:1.85;color:var(--sub1);overflow-x:auto;margin-top:20px}
+pre.code .c{color:var(--ov0)}
+pre.code .k{color:var(--mauve);font-weight:500}
+pre.code .s{color:var(--green)}
+pre.code .p{color:var(--peach)}
+pre.code .v{color:var(--blue)}
 
-        /* ── Bento ── */
-        .bento{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
-        .bento-card{background:var(--mantle);border:1px solid var(--sf0);border-radius:12px;padding:28px;transition:all .25s;position:relative;overflow:hidden}
-        .bento-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--accent1),var(--accent2));opacity:0;transition:opacity .25s}
-        .bento-card:hover{transform:translateY(-3px);border-color:var(--sf1);box-shadow:0 12px 32px rgba(0,0,0,0.25),0 0 20px rgba(var(--accentrgb),0.06)}
-        .bento-card:hover::before{opacity:1}
-        .bento-hero{grid-column:span 2}
-        .bento-card h3{font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:600;color:var(--accent1);margin-bottom:8px}
-        .bento-card p{font-size:13.5px;color:var(--sub0);line-height:1.6}
-        .bento-card .mini-terminal{background:var(--crust);border-radius:8px;padding:14px;margin-top:14px;font-family:'JetBrains Mono',monospace;font-size:12px;line-height:1.8;text-align:left}
-        .bento-stat{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
-        .bento-stat .big{font-family:'JetBrains Mono',monospace;font-size:42px;font-weight:700;color:var(--accent1)}
-        .bento-stat .label{font-size:12px;color:var(--sf2);margin-top:4px;letter-spacing:1px}
+.ref{background:var(--mantle);border:1px solid var(--sf0);padding:24px 28px;font-family:'JetBrains Mono','SF Mono',monospace;font-size:13px;line-height:1.85;color:var(--sub1);overflow-x:auto;margin-top:20px;border-radius:0}
+.ref h4{font-size:10px;color:var(--ov0);letter-spacing:0.18em;text-transform:uppercase;font-weight:600;margin:14px 0 8px}
+.ref h4:first-child{margin-top:0}
+.ref code{color:var(--mauve);font-weight:500;display:inline-block;width:200px}
+.ref .desc{color:var(--sub1)}
+.ref .env{color:var(--peach);font-weight:500;display:inline-block;width:200px}
 
-        /* ── Pills ── */
-        .pills{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px}
-        .pill{background:var(--mantle);border:1px solid var(--sf0);border-radius:20px;padding:9px 18px;font-family:'JetBrains Mono',monospace;font-size:12px;display:flex;align-items:center;gap:8px;transition:all .2s;color:var(--sub0)}
-        .pill:hover{border-color:var(--sf1);background:var(--base)}
-        .dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
-        .dot-g{background:var(--green)}.dot-y{background:var(--yellow)}.dot-n{background:var(--sf2)}
+.band{background:var(--text);color:var(--crust);padding:48px 32px;border-bottom:1px solid var(--text);display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:32px}
+.band-tag{font-family:'JetBrains Mono','SF Mono',monospace;font-size:11px;letter-spacing:0.2em;text-transform:uppercase;font-weight:600}
+.band h3{font-family:'Inter',sans-serif;font-weight:700;font-size:32px;line-height:1.1;letter-spacing:-0.02em}
+.band a.cta{background:var(--crust);color:var(--text);padding:16px 28px;font-family:'JetBrains Mono','SF Mono',monospace;font-size:13px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;border:1px solid var(--crust);transition:all 0.15s;white-space:nowrap}
+.band a.cta:hover{background:var(--accent);color:var(--crust);border-color:var(--accent)}
 
-        /* ── Arch ── */
-        .arch-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
-        .arch-card{background:var(--mantle);border:1px solid var(--sf0);border-radius:12px;padding:28px;transition:border-color .2s}
-        .arch-card:hover{border-color:var(--sf1)}
-        .arch-num{display:inline-flex;width:30px;height:30px;background:linear-gradient(135deg,var(--accent1),var(--accentmid));color:var(--crust);border-radius:50%;align-items:center;justify-content:center;font-weight:700;font-size:14px;margin-bottom:14px}
-        .arch-card h3{font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:600;color:var(--teal);margin-bottom:8px}
-        .arch-card p{font-size:13.5px;color:var(--sub0);line-height:1.6}
+footer{padding:32px 24px;display:flex;justify-content:space-between;font-family:'JetBrains Mono','SF Mono',monospace;font-size:11px;color:var(--ov0);letter-spacing:0.1em;text-transform:uppercase;flex-wrap:wrap;gap:16px}
+footer a{color:var(--ov2);border-bottom:1px solid var(--sf0);transition:all .15s}
+footer a:hover{color:var(--text);border-bottom-color:var(--text)}
 
-        /* ── Two Col ── */
-        .two-col{display:grid;grid-template-columns:1fr 1fr;gap:20px}
-
-        /* ── Detection ── */
-        .detect-card{background:var(--mantle);border-radius:12px;padding:28px}
-        .detect-card h3{font-size:14px;margin-bottom:14px;display:flex;align-items:center;gap:8px}
-        .detect-card ul{list-style:none;font-size:13px;color:var(--sub0);line-height:2.2}
-        .detect-hidden{border-left:3px solid var(--green)}.detect-hidden h3{color:var(--green)}
-        .detect-visible{border-left:3px solid var(--yellow)}.detect-visible h3{color:var(--yellow)}
-
-        /* ── Footer ── */
-        footer{padding:48px 0;margin-top:40px}
-        .footer-line{height:1px;background:linear-gradient(90deg,transparent,var(--accent1),var(--accent2),transparent);margin-bottom:48px}
-        .footer-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:32px}
-        .footer-grid h4{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text);margin-bottom:14px;letter-spacing:2px;text-transform:uppercase}
-        .footer-grid ul{list-style:none}
-        .footer-grid li{margin-bottom:8px}
-        .footer-grid a{color:var(--ov2);text-decoration:none;font-size:13px;transition:color .2s}
-        .footer-grid a:hover{color:var(--accent1)}
-        .footer-grid p{font-size:13px;color:var(--ov1);line-height:1.7}
-        .footer-bottom{text-align:center;margin-top:36px;padding-top:24px;border-top:1px solid var(--sf0);font-size:12px;color:var(--ov0)}
-
-        /* ── Animate ── */
-        .animate{opacity:0;transform:translateY(24px);transition:opacity .6s ease,transform .6s ease}
-        .animate.visible{opacity:1;transform:translateY(0)}
-        .animate-scale{opacity:0;transform:translateY(24px) scale(.97);transition:opacity .8s ease,transform .8s ease}
-        .animate-scale.visible{opacity:1;transform:translateY(0) scale(1)}
-
-        /* ── Responsive ── */
-        @media(max-width:960px){.bento{grid-template-columns:1fr 1fr}.bento-hero{grid-column:span 2}.two-col,.arch-grid{grid-template-columns:1fr}.footer-grid{grid-template-columns:repeat(2,1fr)}.stats{flex-wrap:wrap;gap:24px}}
-        @media(max-width:600px){.container{padding:0 16px}.hero{padding:100px 0 48px}.bento{grid-template-columns:1fr}.bento-hero{grid-column:span 1}.stats{gap:16px}.stat-div{display:none}.nav-links a:not(.nav-cta){display:none}.footer-grid{grid-template-columns:1fr}.pills{grid-template-columns:repeat(auto-fill,minmax(140px,1fr))}}
-
-        a:focus-visible{outline:2px solid var(--accent1);outline-offset:2px}
-    </style>
+@media (max-width:760px){
+  .hero h1{font-size:64px}
+  .hero-grid{grid-template-columns:1fr 1fr}
+  .grid{grid-template-columns:1fr}
+  .cell{border-right:none;border-bottom:1px solid var(--sf1)}
+  .cell:last-child{border-bottom:none}
+  .band{grid-template-columns:1fr;text-align:left}
+  .status{font-size:10px;padding:10px 14px}
+  .status .left,.status .right{gap:14px}
+}
+</style>
 </head>
 <body>
 
-    <!-- Nav -->
-    <nav class="nav"><div class="nav-inner">
-        <a href="#" class="nav-logo">Aquifer</a>
-        <div class="nav-links">
-            <a href="#features">Features</a>
-            <a href="#architecture">Architecture</a>
-            <a href="https://github.com/Real-Fruit-Snacks/Aquifer">GitHub</a>
-            <a href="https://github.com/Real-Fruit-Snacks/Aquifer/releases/latest" class="nav-cta">Download</a>
-        </div>
-    </div></nav>
+<div class="status">
+  <div class="left">
+    <span><b>AQUIFER</b></span>
+    <span><span class="dot"></span>STATUS · ALPHA · POST-EX</span>
+    <span>GO 1.21+ · LINUX</span>
+  </div>
+  <div class="right">
+    <a href="https://github.com/Real-Fruit-Snacks/Aquifer">REPO</a>
+    <a href="https://github.com/Real-Fruit-Snacks/Aquifer/security/advisories">SECURITY</a>
+    <a href="https://github.com/Real-Fruit-Snacks/Aquifer/blob/main/LICENSE">MIT</a>
+  </div>
+</div>
 
-    <!-- Hero -->
-    <section class="hero">
-        <div class="container">
-            <div class="hero-logo animate"><img src="https://raw.githubusercontent.com/Real-Fruit-Snacks/Aquifer/main/docs/assets/logo-dark.svg" alt="Aquifer"></div>
-            <h1 class="hero-tagline animate" style="transition-delay:.1s">Post-exploitation with namespace isolation</h1>
-            <p class="hero-desc animate" style="transition-delay:.2s">Kernel namespace isolation turns the OS against its own defenses. Multi-channel C2 with polymorphic beacons. 36 stealth modules for deep host-level blending.</p>
-            <div class="hero-ctas animate" style="transition-delay:.3s">
-                <a href="https://github.com/Real-Fruit-Snacks/Aquifer/releases/latest" class="btn-primary">Download Latest</a>
-                <a href="https://github.com/Real-Fruit-Snacks/Aquifer" class="btn-secondary">View Source</a>
-            </div>
-            <div class="terminal animate-scale" style="transition-delay:.4s">
-                <div class="terminal-bar">
-                    <span class="terminal-dot"></span><span class="terminal-dot"></span><span class="terminal-dot"></span>
-                    <span class="terminal-label">aquifer</span>
-                </div>
-                <div class="terminal-body"><pre><span class="t-m"># Build and deploy</span>
-<span class="t-g">$</span> make build-release
-<span class="t-b">garble -literals -tiny -seed=random build ...</span>
-<span class="t-b">UPX compressed: 8.2MB → 3.1MB</span>
-<span class="t-p">PASS: No Go module paths found</span>
-<span class="t-p">PASS: High binary entropy (7.98)</span>
-
-<span class="t-m"># C2 operator console</span>
-<span class="t-g">$</span> python3 -m c2server --db c2.db --keys server_keys.pem
-<span class="t-b">aquifer&gt;</span> sessions
-<span class="t-m">ID  Hostname    Transport  Last Seen</span>
-<span class="t-m">1   target-01   HTTPS      2s ago</span></pre></div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Stats -->
-    <div class="container">
-        <div class="stats animate">
-            <div class="stat"><div class="stat-num" data-target="5">0</div><div class="stat-label">Namespaces</div></div>
-            <div class="stat-div"></div>
-            <div class="stat"><div class="stat-num" data-target="4">0</div><div class="stat-label">C2 Channels</div></div>
-            <div class="stat-div"></div>
-            <div class="stat"><div class="stat-num" data-target="36">0</div><div class="stat-label">Stealth Modules</div></div>
-            <div class="stat-div"></div>
-            <div class="stat"><div class="stat-num" data-target="10">0</div><div class="stat-label">Persistence</div></div>
-        </div>
-        <div class="gradient-line"></div>
+<section class="hero">
+  <div class="hero-inner">
+    <span class="pop">Real-Fruit-Snacks &nbsp;//&nbsp; offensive tooling &nbsp;//&nbsp; authorized engagements only</span>
+    <h1>AQUIFER<span class="dot">.</span></h1>
+    <div class="hero-grid">
+      <div><div class="label">isolation</div><div class="value">5<span class="unit"> NAMESPACE</span></div></div>
+      <div><div class="label">channels</div><div class="value">4<span class="unit"> × FAILOVER</span></div></div>
+      <div><div class="label">modules</div><div class="value">36<span class="unit"> STEALTH</span></div></div>
+      <div><div class="label">stack</div><div class="value">Go<span class="unit"> 1.21+</span></div></div>
     </div>
+  </div>
+</section>
 
-    <!-- Features Bento -->
-    <section id="features">
-        <div class="container">
-            <div class="section-label animate">FEATURES</div>
-            <h2 class="section-title animate" style="transition-delay:.08s">Kernel-level stealth operations</h2>
-            <p class="section-desc animate" style="transition-delay:.16s">Namespace isolation as the foundation. Every capability designed for deep host-level blending and operational security.</p>
+<div class="grid">
+  <div class="cell">
+    <div class="cell-header"><span class="cell-num">01</span><span class="cell-name">Premise</span></div>
+    <h2>Below the <mark>netfilter</mark> layer.</h2>
+    <p>Aquifer is a <strong>post-exploitation</strong> framework, not initial access. It assumes a foothold already exists and focuses on what comes next — hiding deeper than userspace tooling can see, and surviving against EDR, DFIR, and active hunt teams on Linux hosts.</p>
+    <p>The implant operates inside its own kernel-enforced namespace sandbox with a veth pair to host network and DNAT loopback for C2. Configuration bakes at compile time via <code>-ldflags</code> — no runtime args, no environment lookups, no secrets on disk.</p>
+  </div>
 
-            <div class="bento">
-                <div class="bento-card bento-hero animate" style="transition-delay:.1s">
-                    <h3>Namespace Isolation</h3>
-                    <p>PID + Mount + Network + UTS + Cgroup namespaces with veth pair routing, NAT masquerade, and DNAT loopback for host connectivity. The implant operates in its own kernel-enforced sandbox invisible to the host.</p>
-                    <div class="mini-terminal"><span class="t-m"># Two-stage execution</span><br><span class="t-g">$</span> <span class="t-b">parent:</span> guardrails → evasion → OPSEC → namespace setup<br><span class="t-g">$</span> <span class="t-b">child:</span>  re-exec into PID+Mount+Net+UTS+Cgroup isolation</div>
-                </div>
-                <div class="bento-card bento-stat animate" style="transition-delay:.18s">
-                    <div class="big">36</div>
-                    <div class="label">Stealth Modules</div>
-                </div>
-                <div class="bento-card bento-hero animate" style="transition-delay:.2s">
-                    <h3 style="color:var(--teal)">C2 Transport</h3>
-                    <p>Four independent channels with automatic failover. HTTPS with domain fronting and JA3 randomization. DNS tunneling via TXT records. DNS-over-HTTPS. Raw Layer 2 Ethernet frames below netfilter/iptables.</p>
-                    <div class="mini-terminal"><span class="t-b">HTTPS</span> → <span class="t-b">DNS</span> → <span class="t-b">DoH</span> → <span class="t-b">Raw L2</span>  <span class="t-m">(cascading fallback)</span><br><span class="t-m">JA3 randomization · domain fronting · traffic shaping</span><br><span class="t-m">polymorphic beacons · ECDH + AES-256-GCM</span></div>
-                </div>
-                <div class="bento-card animate" style="transition-delay:.28s">
-                    <h3 style="color:var(--mauve)">Polymorphic Beacons</h3>
-                    <p>18 rotating paths, 8 content-types, 13 user-agents, randomized headers per cycle. JA3 fingerprint randomization per session. Traffic shaping mimics legitimate browsing.</p>
-                </div>
-                <div class="bento-card animate" style="transition-delay:.36s">
-                    <h3 style="color:var(--green)">Stealth Modules</h3>
-                    <p>eBPF cloaking, fileless execution via memfd_create, kernel keyring secrets, anti-dump regions, io_uring covert I/O, process masquerade, cgroup camouflage, and more.</p>
-                </div>
-                <div class="bento-card animate" style="transition-delay:.1s">
-                    <h3 style="color:var(--peach)">Persistence</h3>
-                    <p>Systemd generators, NSS modules, logrotate hooks, DHCP client hooks, APT hooks, audit dispatcher, binfmt_misc, modprobe hooks, NM dispatcher, and sysctl.d tunables.</p>
-                </div>
-                <div class="bento-card animate" style="transition-delay:.18s">
-                    <h3 style="color:var(--yellow)">Guardrails</h3>
-                    <p>Hostname, CIDR, MAC, machine ID, canary file, and kill date prevent lab escape. Auto-terminates and cleans up outside target environment.</p>
-                </div>
-                <div class="bento-card animate" style="transition-delay:.26s">
-                    <h3 style="color:var(--red)">OPSEC</h3>
-                    <p>Memory encryption with XOR rekeying. Core dump prevention. Anti-ptrace. Environment scrubbing. Thread count reduction. I/O noise injection. Binary self-deletion.</p>
-                </div>
-            </div>
-        </div>
-    </section>
+  <div class="cell">
+    <div class="cell-header"><span class="cell-num">02</span><span class="cell-name">Specs</span></div>
+    <h2>What's in the box.</h2>
+    <div class="feat">
+      <div class="k">ISOLATION</div><div class="v"><b>5 namespaces</b> — PID · Mount · Network · UTS · Cgroup · veth + NAT masquerade.</div>
+      <div class="k">CHANNELS</div><div class="v"><b>HTTPS · DNS · DoH · Raw L2</b> with cascading failover. Raw L2 is below netfilter.</div>
+      <div class="k">BEACONS</div><div class="v"><b>18 paths · 8 content-types · 13 user-agents</b> rotating per cycle. JA3 randomized per session.</div>
+      <div class="k">STEALTH</div><div class="v"><b>36 modules</b> — eBPF cloaking · memfd exec · keyring secrets · io_uring · anti-dump.</div>
+      <div class="k">BUILD</div><div class="v"><code>garble</code> obfuscation + <code>UPX</code> packing + signature scrubbing.</div>
+      <div class="k">STACK</div><div class="v">Go 1.21+ (1.25+ for garble) · Linux only · Python operator console (cmd2 + Rich).</div>
+    </div>
+  </div>
+</div>
 
-    <!-- Capabilities -->
-    <section style="background:var(--mantle)">
-        <div class="container">
-            <div class="section-label animate">CAPABILITIES</div>
-            <h2 class="section-title animate" style="transition-delay:.08s">Stealth capabilities</h2>
-            <p class="section-desc animate" style="transition-delay:.16s">36 modules for deep host-level blending. Every aspect of the implant footprint is managed.</p>
-            <div class="pills">
-                <div class="pill animate"><span class="dot dot-g"></span>PID Namespace</div>
-                <div class="pill animate"><span class="dot dot-g"></span>Mount Namespace</div>
-                <div class="pill animate"><span class="dot dot-g"></span>Network Namespace</div>
-                <div class="pill animate"><span class="dot dot-g"></span>UTS Namespace</div>
-                <div class="pill animate"><span class="dot dot-g"></span>Cgroup Namespace</div>
-                <div class="pill animate"><span class="dot dot-g"></span>eBPF Cloaking</div>
-                <div class="pill animate"><span class="dot dot-g"></span>Fileless Exec</div>
-                <div class="pill animate"><span class="dot dot-g"></span>Kernel Keyring</div>
-                <div class="pill animate"><span class="dot dot-g"></span>Anti-Dump</div>
-                <div class="pill animate"><span class="dot dot-g"></span>io_uring I/O</div>
-                <div class="pill animate"><span class="dot dot-g"></span>Process Masquerade</div>
-                <div class="pill animate"><span class="dot dot-g"></span>JA3 Randomization</div>
-                <div class="pill animate"><span class="dot dot-g"></span>Domain Fronting</div>
-                <div class="pill animate"><span class="dot dot-g"></span>Traffic Shaping</div>
-                <div class="pill animate"><span class="dot dot-g"></span>Polymorphic Beacons</div>
-                <div class="pill animate"><span class="dot dot-g"></span>ECDH + AES-GCM</div>
-                <div class="pill animate"><span class="dot dot-g"></span>Cgroup Camouflage</div>
-                <div class="pill animate"><span class="dot dot-g"></span>D-Bus Blending</div>
-                <div class="pill animate"><span class="dot dot-g"></span>Seccomp Awareness</div>
-                <div class="pill animate"><span class="dot dot-g"></span>Landlock Sandbox</div>
-            </div>
-            <div style="margin-top:16px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ov0)">
-                <span style="color:var(--green)">●</span> Full &nbsp;
-                <span style="color:var(--yellow)">●</span> Kernel 5.10+ &nbsp;
-                <span style="color:var(--sf2)">●</span> Planned
-            </div>
-        </div>
-    </section>
+<div class="grid">
+  <div class="cell full">
+    <div class="cell-header"><span class="cell-num">03</span><span class="cell-name">Quickstart</span></div>
+    <h2>Build, verify, deploy.</h2>
+    <p>Three build profiles: dev, garble (obfuscated), release (garble + UPX + scrubbing). Two-stage execution — parent validates guardrails and re-execs into namespace child.</p>
+<pre class="code"><span class="c"># Prerequisites: Go 1.21+ (1.25+ for garble), Linux</span>
+$ <span class="k">git clone</span> https://github.com/Real-Fruit-Snacks/Aquifer <span class="p">&amp;&amp;</span> <span class="k">cd</span> Aquifer
+$ <span class="k">make</span> build              <span class="c"># dev: stock Go, debug symbols</span>
 
-    <!-- Architecture -->
-    <section id="architecture">
-        <div class="container">
-            <div class="section-label animate">ARCHITECTURE</div>
-            <h2 class="section-title animate" style="transition-delay:.08s">Four-layer design</h2>
-            <p class="section-desc animate" style="transition-delay:.16s">Two-stage execution with compile-time configuration. Parent validates, child operates inside isolated namespaces.</p>
-            <div class="arch-grid">
-                <div class="arch-card animate" style="transition-delay:.1s"><div class="arch-num">1</div><h3>Namespace Engine</h3><p>PID + Mount + Network + UTS + Cgroup isolation. Veth pair routing with NAT masquerade and DNAT loopback. Host-side cleanup on exit via parent signal handler.</p></div>
-                <div class="arch-card animate" style="transition-delay:.2s"><div class="arch-num">2</div><h3>C2 Transport</h3><p>Four channels with automatic failover: HTTPS (domain fronting, JA3), DNS (TXT records), DoH, Raw L2 (AF_PACKET). ECDH key exchange + AES-256-GCM.</p></div>
-                <div class="arch-card animate" style="transition-delay:.3s"><div class="arch-num">3</div><h3>Module Framework</h3><p>36 stealth modules in <code>pkg/stealth/</code>. eBPF cloaking, fileless execution, kernel keyring, io_uring, anti-dump, process genealogy, cgroup camouflage.</p></div>
-                <div class="arch-card animate" style="transition-delay:.4s"><div class="arch-num">4</div><h3>Persistence Layer</h3><p>10 advanced methods beyond cron/systemd. Systemd generators, NSS modules, logrotate, DHCP, APT, audit, binfmt_misc, modprobe, NM dispatcher, sysctl.d.</p></div>
-            </div>
-        </div>
-    </section>
+<span class="c"># Hardened build profiles</span>
+$ <span class="k">make</span> build-garble       <span class="c"># obfuscated: garble strips identifiers</span>
+$ <span class="k">make</span> build-release      <span class="c"># garble + UPX + signature patching</span>
 
-    <!-- Getting Started -->
-    <section style="background:var(--mantle)">
-        <div class="container">
-            <div class="section-label animate">GETTING STARTED</div>
-            <h2 class="section-title animate" style="transition-delay:.08s">Build and deploy</h2>
-            <p class="section-desc animate" style="transition-delay:.16s">Multiple build profiles. Production builds include garble obfuscation, UPX compression, and signature patching.</p>
-            <div class="two-col">
-                <div class="terminal animate" style="transition-delay:.1s">
-                    <div class="terminal-bar"><span class="terminal-dot"></span><span class="terminal-dot"></span><span class="terminal-dot"></span><span class="terminal-label">build.sh</span></div>
-                    <div class="terminal-body"><pre><span class="t-g">$</span> git clone https://github.com/Real-Fruit-Snacks/Aquifer.git
-<span class="t-g">$</span> cd Aquifer
+<span class="c"># Verification</span>
+$ <span class="k">make</span> opsec-check        <span class="c"># No Go metadata leaks · high entropy · UPX scrubbed</span>
+$ <span class="k">make</span> strings-check      <span class="c"># Compare regular vs garble side-by-side</span></pre>
+  </div>
+</div>
 
-<span class="t-m"># Development build (stripped, static)</span>
-<span class="t-g">$</span> make build
+<div class="grid">
+  <div class="cell full">
+    <div class="cell-header"><span class="cell-num">04</span><span class="cell-name">Reference</span></div>
+    <h2>Channels, modules, persistence, guardrails.</h2>
+    <p>Four C2 channels with cascading failover. 36 stealth modules across process / exec / anti-forensic categories. Dozens of persistence vectors beyond the obvious.</p>
+<div class="ref">
+<h4>ISOLATION &nbsp;<span style="color:var(--ov0)">// 5 namespaces</span></h4>
+<div><code>PID</code><span class="desc">Process ID isolation · invisible to host ps</span></div>
+<div><code>MOUNT</code><span class="desc">Filesystem view isolation</span></div>
+<div><code>NETWORK</code><span class="desc">Own network stack · veth pair to host · NAT masquerade</span></div>
+<div><code>UTS</code><span class="desc">Hostname / domainname isolation</span></div>
+<div><code>CGROUP</code><span class="desc">Resource limits invisible from host</span></div>
 
-<span class="t-m"># Obfuscated build</span>
-<span class="t-g">$</span> make build-garble
+<h4>C2 CHANNELS &nbsp;<span style="color:var(--ov0)">// HTTPS → DNS → DoH → Raw L2</span></h4>
+<div><code>HTTPS</code><span class="desc">Domain fronting · JA3 randomization · 18 rotating paths · 8 content-types · 13 UAs</span></div>
+<div><code>DNS</code><span class="desc">TXT record tunneling · query-amplified</span></div>
+<div><code>DoH</code><span class="desc">DNS-over-HTTPS via public resolvers</span></div>
+<div><code>RAW L2</code><span class="desc">AF_PACKET · below netfilter / iptables · invisible to filters</span></div>
 
-<span class="t-m"># Production release</span>
-<span class="t-g">$</span> make build-release
-<span class="t-p">garble + UPX + signature patching</span></pre></div>
-                </div>
-                <div class="terminal animate" style="transition-delay:.25s">
-                    <div class="terminal-bar"><span class="terminal-dot"></span><span class="terminal-dot"></span><span class="terminal-dot"></span><span class="terminal-label">c2server.sh</span></div>
-                    <div class="terminal-body"><pre><span class="t-m"># Start C2 operator console</span>
-<span class="t-g">$</span> pip install -r c2server/requirements.txt
-<span class="t-g">$</span> python3 -m c2server --db c2.db --keys server_keys.pem
+<h4>STEALTH MODULES &nbsp;<span style="color:var(--ov0)">// 36 total under pkg/stealth/</span></h4>
+<div><code>process_blend</code><span class="desc">Argv / proc-name camouflage</span></div>
+<div><code>ebpf_cloak</code><span class="desc">Hide PIDs in BPF maps</span></div>
+<div><code>memfd_exec</code><span class="desc">memfd_create + execveat for fileless execution</span></div>
+<div><code>keyring_store</code><span class="desc">Kernel keyring · invisible to userspace forensics</span></div>
+<div><code>iouring</code><span class="desc">io_uring shared rings bypass syscall monitoring</span></div>
+<div><code>antidump</code><span class="desc">Block LiME / AVML memory acquisition</span></div>
+<div><code>seccomp_notif</code><span class="desc">Hook syscalls via seccomp user-notif</span></div>
+<div><code>polymorphic</code><span class="desc">Self-modifying code regions</span></div>
+<div><code>vmwrite_inject</code><span class="desc">Cross-process memory writes via process_vm_writev</span></div>
 
-<span class="t-m"># Interact with implant</span>
-<span class="t-b">aquifer&gt;</span> sessions
-<span class="t-m">ID  Hostname    Transport  Last Seen</span>
-<span class="t-m">1   target-01   HTTPS      2s ago</span>
+<h4>PERSISTENCE &nbsp;<span style="color:var(--ov0)">// beyond the obvious</span></h4>
+<div><code>STANDARD</code><span class="desc">cron · systemd · init.d · bashrc</span></div>
+<div><code>systemd-generator</code><span class="desc">Runs at every boot before fstab is read</span></div>
+<div><code>nss-module</code><span class="desc">/etc/nsswitch.conf hook</span></div>
+<div><code>logrotate-hook</code><span class="desc">Triggered on log rotation</span></div>
+<div><code>dhcp-hook</code><span class="desc">DHCP client up/down hooks</span></div>
+<div><code>apt-hook</code><span class="desc">Pre/Post-Invoke on package operations</span></div>
+<div><code>audit-dispatcher</code><span class="desc">auditd dispatcher binary</span></div>
+<div><code>binfmt_misc</code><span class="desc">Custom binary format handler</span></div>
+<div><code>modprobe-hook</code><span class="desc">Kernel module load triggers</span></div>
+<div><code>NM-dispatcher</code><span class="desc">NetworkManager dispatcher script</span></div>
+<div><code>sysctl.d</code><span class="desc">Tunable applied at boot</span></div>
 
-<span class="t-b">aquifer[1]&gt;</span> shell whoami
-<span class="t-p">root</span></pre></div>
-                </div>
-            </div>
-        </div>
-    </section>
+<h4>GUARDRAILS &nbsp;<span style="color:var(--ov0)">// lab escape prevention</span></h4>
+<div><code>HOSTNAME</code><span class="desc">Refuse to run if hostname doesn't match</span></div>
+<div><code>CIDR</code><span class="desc">IP must be in target network range</span></div>
+<div><code>MAC</code><span class="desc">Network adapter MAC fingerprint</span></div>
+<div><code>MACHINE-ID</code><span class="desc">/etc/machine-id check</span></div>
+<div><code>CANARY</code><span class="desc">Specific file must exist on host</span></div>
+<div><code>KILL DATE</code><span class="desc">Auto-terminate after timestamp · cleanup on exit</span></div>
+</div>
+  </div>
+</div>
 
-    <!-- Detection -->
-    <section>
-        <div class="container">
-            <div class="section-label animate">DETECTION AWARENESS</div>
-            <h2 class="section-title animate" style="transition-delay:.08s">Know the boundaries</h2>
-            <div class="two-col" style="margin-top:32px">
-                <div class="detect-card detect-hidden animate" style="transition-delay:.1s">
-                    <h3>Hidden From</h3>
-                    <ul>
-                        <li><code>ps aux</code>, <code>top</code>, <code>htop</code> — process masquerade</li>
-                        <li><code>/proc/PID/environ</code> — direct memory zeroing</li>
-                        <li><code>/proc/PID/maps</code> — region name spoofing</li>
-                        <li>LiME, AVML — anti-dump memory protection</li>
-                        <li><code>lsof</code> — FD spoofing via bind mounts</li>
-                        <li>Syscall monitors — io_uring bypass</li>
-                        <li>Network forensics — polymorphic + encrypted traffic</li>
-                        <li>Container detection — namespace + ID spoofing</li>
-                    </ul>
-                </div>
-                <div class="detect-card detect-visible animate" style="transition-delay:.2s">
-                    <h3>Visible To</h3>
-                    <ul>
-                        <li>Kernel integrity monitoring (IMA/EVM)</li>
-                        <li>Hardware security modules (TPM attestation)</li>
-                        <li>Custom eBPF tracing targeting specific patterns</li>
-                        <li>Network metadata analysis (connection timing)</li>
-                        <li>Hypervisor-level inspection (VM introspection)</li>
-                        <li>SELinux/AppArmor in strict enforce mode</li>
-                        <li>Physical memory acquisition (cold boot)</li>
-                        <li>Kernel-level rootkit detectors</li>
-                    </ul>
-                </div>
-            </div>
-        </div>
-    </section>
+<div class="grid">
+  <div class="cell">
+    <div class="cell-header"><span class="cell-num">05</span><span class="cell-name">Architecture</span></div>
+    <h2>Two-stage exec, kernel-level hide.</h2>
+    <p>Parent process validates guardrails and sets up host-side veth pair. Re-execs into the namespace child which operates inside isolation. Compile-time config via <code>-ldflags</code>. Memory-first design with <code>ProtectedConfig</code> and deterministic shredding.</p>
+<pre class="code"><span class="c">cmd/</span>
+implant/main.go         <span class="c">// entry: parent → namespace child</span>
+test-implant/main.go    <span class="c">// integration test implant</span>
+<span class="c">pkg/</span>
+c2/                     <span class="c">// HTTPS, DNS, DoH, Raw L2, polymorphic</span>
+config/config.go        <span class="c">// compile-time config via -ldflags</span>
+evasion/                <span class="c">// VM/sandbox/EDR detection</span>
+namespace/              <span class="c">// Linux namespace management</span>
+opsec/                  <span class="c">// core dumps, anti-ptrace, masquerade</span>
+stealth/                <span class="c">// 36 stealth modules</span>
+tasking/                <span class="c">// task handler framework</span>
+<span class="c">c2server/                  // Python operator console (cmd2 + Rich)</span></pre>
+  </div>
 
-    <!-- Footer -->
-    <footer>
-        <div class="container">
-            <div class="footer-line"></div>
-            <div class="footer-grid">
-                <div><h4>Documentation</h4><ul><li><a href="https://github.com/Real-Fruit-Snacks/Aquifer#quick-start">Quick Start</a></li><li><a href="https://github.com/Real-Fruit-Snacks/Aquifer#features">Features</a></li><li><a href="https://github.com/Real-Fruit-Snacks/Aquifer#architecture">Architecture</a></li><li><a href="https://github.com/Real-Fruit-Snacks/Aquifer#security">Security</a></li></ul></div>
-                <div><h4>Resources</h4><ul><li><a href="https://github.com/Real-Fruit-Snacks/Aquifer/releases/latest">Latest Release</a></li><li><a href="https://github.com/Real-Fruit-Snacks/Aquifer/issues">Report Issue</a></li><li><a href="https://github.com/Real-Fruit-Snacks/Aquifer/blob/main/CONTRIBUTING.md">Contributing</a></li><li><a href="https://github.com/Real-Fruit-Snacks/Aquifer/blob/main/CHANGELOG.md">Changelog</a></li></ul></div>
-                <div><h4>Toolkit</h4><ul><li><a href="https://github.com/Real-Fruit-Snacks/Flux">Flux</a></li><li><a href="https://github.com/Real-Fruit-Snacks/Slipstream">Slipstream</a></li><li><a href="https://github.com/Real-Fruit-Snacks/Conduit">Conduit</a></li><li><a href="https://github.com/Real-Fruit-Snacks">View All →</a></li></ul></div>
-                <div><h4>License</h4><p>MIT License<br>Copyright © 2026<br>Real-Fruit-Snacks</p></div>
-            </div>
-            <div class="footer-bottom">Part of the Real-Fruit-Snacks security toolkit</div>
-        </div>
-    </footer>
+  <div class="cell">
+    <div class="cell-header"><span class="cell-num">06</span><span class="cell-name">Authorization</span></div>
+    <h2>Without permission, don't.</h2>
+    <p>Aquifer is built for engagements that are scoped, written, and signed. <strong>Authorization required</strong> — designed exclusively for authorized security testing with explicit written permission. Unauthorized access to computer systems is illegal.</p>
+    <p>Vulnerabilities go through <a href="https://github.com/Real-Fruit-Snacks/Aquifer/security/advisories" style="color:var(--accent);border-bottom:1px solid currentColor">private security advisories</a>, never public issues. <strong>90-day responsible disclosure.</strong></p>
+    <p style="color:var(--ov1);font-size:14px;font-style:italic">Aquifer does not scan or exploit (not initial access), spray credentials (not lateral movement), or operate cross-platform (Linux namespace isolation by design).</p>
+  </div>
+</div>
 
-    <script>
-    // Scroll animations
-    const obs=new IntersectionObserver(e=>{e.forEach(el=>{if(el.isIntersecting){el.target.classList.add('visible');obs.unobserve(el.target)}})},{threshold:.1,rootMargin:'0px 0px -50px 0px'});
-    document.querySelectorAll('.animate,.animate-scale').forEach(el=>obs.observe(el));
+<div class="band">
+  <div class="band-tag">→ START HERE</div>
+  <h3>Read the threat model<br>before you read the install.</h3>
+  <a class="cta" href="https://github.com/Real-Fruit-Snacks/Aquifer">Open repo</a>
+</div>
 
-    // Counter animation
-    function countUp(el){const t=parseInt(el.dataset.target),s=el.dataset.suffix||'',p=el.dataset.prefix||'',d=1500,st=performance.now();function u(n){const pr=Math.min((n-st)/d,1),e=1-Math.pow(1-pr,3);el.textContent=p+Math.floor(t*e)+s;if(pr<1)requestAnimationFrame(u)}requestAnimationFrame(u)}
-    const sobs=new IntersectionObserver(e=>{e.forEach(el=>{if(el.isIntersecting){countUp(el.target);sobs.unobserve(el.target)}})},{threshold:.5});
-    document.querySelectorAll('.stat-num').forEach(el=>sobs.observe(el));
+<footer>
+  <span>© 2026 Real-Fruit-Snacks · MIT</span>
+  <span>
+    <a href="https://real-fruit-snacks.github.io/">all 50 projects</a> &nbsp;·&nbsp;
+    <a href="https://github.com/Real-Fruit-Snacks/Aquifer">github</a> &nbsp;·&nbsp;
+    <a href="https://github.com/Real-Fruit-Snacks/Aquifer/security/advisories">security</a>
+  </span>
+</footer>
 
-    // Nav scroll
-    window.addEventListener('scroll',()=>{document.querySelector('.nav').style.borderBottomColor=window.scrollY>20?'rgba(49,50,68,0.8)':'rgba(49,50,68,0.3)'});
-    </script>
 </body>
 </html>

@@ -1,23 +1,32 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 110" fill="none">
-  <defs>
-    <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#dc2626"/>
-      <stop offset="50%" stop-color="#e11d48"/>
-      <stop offset="100%" stop-color="#db2777"/>
-    </linearGradient>
-    <radialGradient id="glow" cx="50%" cy="40%" r="40%">
-      <stop offset="0%" stop-color="#dc2626" stop-opacity="0.08"/>
-      <stop offset="50%" stop-color="#e11d48" stop-opacity="0.03"/>
-      <stop offset="100%" stop-color="#db2777" stop-opacity="0"/>
-    </radialGradient>
-    <filter id="textglow">
-      <feGaussianBlur in="SourceGraphic" stdDeviation="2" result="blur"/>
-      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
-    </filter>
-  </defs>
-  <ellipse cx="210" cy="45" rx="160" ry="40" fill="url(#glow)"/>
-  <text x="210" y="52" text-anchor="middle" font-family="'Inter', 'SF Pro Display', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="46" font-weight="800" fill="url(#grad)" letter-spacing="5" filter="url(#textglow)">AQUIFER</text>
-  <line x1="115" y1="68" x2="305" y2="68" stroke="url(#grad)" stroke-width="0.6" opacity="0.2"/>
-  <text x="210" y="84" text-anchor="middle" font-family="'JetBrains Mono', 'SF Mono', 'Fira Code', 'Cascadia Code', monospace" font-size="10" font-weight="400" fill="#57534e" letter-spacing="5">POST-EXPLOITATION FRAMEWORK</text>
-  <text x="210" y="100" text-anchor="middle" font-family="'JetBrains Mono', 'SF Mono', 'Fira Code', monospace" font-size="7.5" font-weight="400" fill="#a8a29e" letter-spacing="3">GO  ·  NAMESPACES  ·  C2  ·  STEALTH</text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 200" fill="none">
+  <!-- Brutalist modular grid · LIGHT · Catppuccin Latte -->
+  <rect x="0" y="0" width="800" height="200" fill="#ffffff"/>
+
+  <!-- Top status strip -->
+  <line x1="0" y1="32" x2="800" y2="32" stroke="#bcc0cc" stroke-width="1"/>
+  <text x="20" y="22" font-family="'JetBrains Mono', 'SF Mono', 'Fira Code', 'Cascadia Code', monospace" font-size="10" font-weight="700" fill="#8839ef" letter-spacing="2">RFS</text>
+  <text x="60" y="22" font-family="'JetBrains Mono', 'SF Mono', 'Fira Code', 'Cascadia Code', monospace" font-size="10" font-weight="500" fill="#9ca0b0" letter-spacing="2">·  AQUIFER  ·  LINUX POST-EX FRAMEWORK</text>
+  <circle cx="660" cy="18" r="3" fill="#df8e1d"/>
+  <text x="780" y="22" text-anchor="end" font-family="'JetBrains Mono', 'SF Mono', 'Fira Code', 'Cascadia Code', monospace" font-size="10" font-weight="500" fill="#6c6f85" letter-spacing="2">36 MODULES · CI</text>
+
+  <!-- Wordmark -->
+  <text x="20" y="115" font-family="'Inter', 'SF Pro Display', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="92" font-weight="800" fill="#1e1e2e" letter-spacing="-4">AQUIFER<tspan fill="#209fb5">.</tspan></text>
+
+  <!-- Spec grid -->
+  <line x1="0" y1="140" x2="800" y2="140" stroke="#bcc0cc" stroke-width="1"/>
+  <line x1="200" y1="140" x2="200" y2="200" stroke="#bcc0cc" stroke-width="1"/>
+  <line x1="400" y1="140" x2="400" y2="200" stroke="#bcc0cc" stroke-width="1"/>
+  <line x1="600" y1="140" x2="600" y2="200" stroke="#bcc0cc" stroke-width="1"/>
+
+  <text x="20" y="158" font-family="'JetBrains Mono', 'SF Mono', 'Fira Code', 'Cascadia Code', monospace" font-size="9" font-weight="600" fill="#9ca0b0" letter-spacing="2">ISOLATION</text>
+  <text x="20" y="186" font-family="'Inter', 'SF Pro Display', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="22" font-weight="700" fill="#1e1e2e" letter-spacing="-1">5<tspan fill="#209fb5" font-size="14"> × NAMESPACE</tspan></text>
+
+  <text x="220" y="158" font-family="'JetBrains Mono', 'SF Mono', 'Fira Code', 'Cascadia Code', monospace" font-size="9" font-weight="600" fill="#9ca0b0" letter-spacing="2">CHANNELS</text>
+  <text x="220" y="186" font-family="'Inter', 'SF Pro Display', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="22" font-weight="700" fill="#1e1e2e" letter-spacing="-1">4<tspan fill="#209fb5" font-size="14"> × FAILOVER C2</tspan></text>
+
+  <text x="420" y="158" font-family="'JetBrains Mono', 'SF Mono', 'Fira Code', 'Cascadia Code', monospace" font-size="9" font-weight="600" fill="#9ca0b0" letter-spacing="2">MODULES</text>
+  <text x="420" y="186" font-family="'Inter', 'SF Pro Display', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="22" font-weight="700" fill="#1e1e2e" letter-spacing="-1">36<tspan fill="#209fb5" font-size="14"> × STEALTH</tspan></text>
+
+  <text x="620" y="158" font-family="'JetBrains Mono', 'SF Mono', 'Fira Code', 'Cascadia Code', monospace" font-size="9" font-weight="600" fill="#9ca0b0" letter-spacing="2">STACK</text>
+  <text x="620" y="186" font-family="'Inter', 'SF Pro Display', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="22" font-weight="700" fill="#1e1e2e" letter-spacing="-1">GO<tspan fill="#209fb5" font-size="14"> 1.21+</tspan></text>
 </svg>
